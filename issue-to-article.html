@@ -62,6 +62,20 @@
   .sign{margin-top:28px;padding-top:16px;border-top:1px solid var(--border-soft);color:var(--text-muted);font-size:14px;}
   .sign b{color:var(--gold-strong);}
 
+  /* admin: manage published articles */
+  .admin{margin-top:30px;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px 24px;}
+  .admin-title{font-size:18px;font-weight:800;color:var(--gold);margin-bottom:4px;}
+  .admin-sub{font-size:13px;color:var(--text-muted);margin-bottom:14px;}
+  .admin-token{display:flex;gap:10px;margin-bottom:16px;}
+  .admin-token input{flex:1;background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--mono);font-size:13px;}
+  .admin-list{display:flex;flex-direction:column;gap:8px;}
+  .admin-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--border-soft);border-radius:8px;}
+  .admin-row .t{font-size:14px;color:var(--gold-strong);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .admin-row .del{background:transparent;border:1px solid var(--crimson-hover);color:var(--crimson-hover);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:var(--sans);transition:background .15s;}
+  .admin-row .del:hover{background:rgba(166,53,48,.15);}
+  .admin-empty{color:var(--text-muted);font-size:13px;padding:12px 14px;border:1px dashed var(--border);border-radius:8px;}
+  .admin-note{font-size:12px;color:var(--text-muted);margin-top:10px;}
+
   footer{text-align:center;padding:26px 20px 40px;border-top:1px solid var(--border-soft);font-size:13px;color:var(--text-muted);}
   footer .mono{font-family:var(--mono);color:var(--teal);}
 </style>
@@ -99,6 +113,17 @@
         <div class="article-body" id="artBody"></div>
         <div class="sign" id="artSign"></div>
       </div>
+    </section>
+
+    <!-- 管理（仅站长）：列出并删除已发布文章 -->
+    <section class="admin">
+      <h2 class="admin-title">管理已发布文章（仅站长）</h2>
+      <p class="admin-sub">输入你的 GitHub 个人访问令牌（有仓库内容读写权限），即可列出并删除 articles/ 里的文章。令牌只存在你本机浏览器。</p>
+      <div class="admin-token">
+        <input id="patInput" type="password" placeholder="粘贴 GitHub 个人访问令牌（PAT，只保存在本机）" />
+        <button type="button" class="btn ghost" id="savePat">保存</button>
+      </div>
+      <div id="adminList" class="admin-list"></div>
     </section>
   </main>
 
@@ -223,6 +248,51 @@
         var words = (bodyHtml.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().length);
         return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8"/>\n<meta name="viewport" content="width=device-width, initial-scale=1.0"/>\n<title>'+escapeHtml(title)+'</title>\n<meta name="author" content="'+escapeHtml(author||'')+'"/>\n<meta name="date" content="'+escapeHtml(date||'')+'"/>\n<meta name="category" content="攻略"/>\n<style>'+css+'</style>\n</head>\n<body>\n<div class="progress" id="prog"></div>\n<nav class="topnav">\n  <a class="brand" href="../index.html">FO4SO<span class="dot">.</span>KNOWLEDGE</a>\n  <div class="links"><a href="../index.html">首页</a><a href="../guide.html">目录</a><a href="../submit.html">投稿</a></div>\n</nav>\n<main class="article">\n  <nav class="crumb"><a href="../guide.html">目录</a> / <a href="../guide.html#player-guides">玩家上传攻略</a> / <span>'+escapeHtml(title)+'</span></nav>\n  <div class="bar"><a class="back" href="../guide.html#player-guides">← 返回玩家上传攻略</a></div>\n  <header class="head">\n    <h1>'+escapeHtml(title)+'</h1>\n    <div class="meta"><span>作者 <b>'+escapeHtml(author||'匿名')+'</b></span>'+(date?'<span>日期 <b>'+escapeHtml(date)+'</b></span>':'')+'<span>字数 <b>'+words+'</b></span></div>\n  </header>\n  <div class="rule"></div>\n  <div class="body">'+bodyHtml+'</div>\n  <p class="sign">—— 投稿：<b>'+escapeHtml(author||'匿名')+'</b></p>\n</main>\n<footer class="foot">FO4SO.KNOWLEDGE // VERSION：1.5.6</footer>\n<script>\n(function(){var p=document.getElementById('prog');function up(){var h=document.documentElement;var s=h.scrollTop||document.body.scrollTop;var m=h.scrollHeight-h.clientHeight;if(p)p.style.width=(m>0?(s/m*100):0)+'%';}window.addEventListener('scroll',up);up();})();\n</script>\n</body>\n</html>';
       }
+
+      // ===== 管理已发布文章（仅站长）=====
+      var patInput=document.getElementById('patInput'), savePat=document.getElementById('savePat'),
+          adminList=document.getElementById('adminList');
+      var PAT=localStorage.getItem('fo4so_pat')||'';
+      function setPatTip(){ if(patInput) patInput.placeholder = PAT ? '令牌已保存（可重新粘贴更换）' : '粘贴你的 GitHub 个人访问令牌（有仓库内容读写权限）'; }
+      function savePatHandler(){
+        var v=patInput.value.trim(); if(!v){ return; }
+        localStorage.setItem('fo4so_pat', v); PAT=v; patInput.value=''; setPatTip(); loadAdmin();
+      }
+      function loadAdmin(){
+        if(!adminList) return;
+        adminList.innerHTML='<div class="admin-empty">加载中…</div>';
+        fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/articles')
+          .then(function(r){ if(!r.ok) throw new Error('读取失败('+r.status+')'); return r.json(); })
+          .then(function(files){
+            var arr=(files||[]).filter(function(f){ return /\.html$/i.test(f.name); });
+            if(!arr.length){ adminList.innerHTML='<div class="admin-empty">articles/ 里还没有文章。</div>'; return; }
+            adminList.innerHTML='';
+            arr.forEach(function(f){
+              var row=document.createElement('div'); row.className='admin-row';
+              var t=document.createElement('div'); t.className='t'; t.textContent=f.name;
+              var del=document.createElement('button'); del.className='del'; del.textContent='删除';
+              del.addEventListener('click',function(){ removeArticle(f); });
+              row.appendChild(t); row.appendChild(del); adminList.appendChild(row);
+            });
+          })
+          .catch(function(){ adminList.innerHTML='<div class="admin-empty">读取失败，请稍后刷新。</div>'; });
+      }
+      function removeArticle(f){
+        if(!PAT){ alert('请先在上方粘贴并保存你的 GitHub 令牌'); return; }
+        if(!window.confirm('确定删除文章：'+f.name+'？')) return;
+        fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/articles/'+encodeURIComponent(f.name), {
+          method:'DELETE',
+          headers:{ Authorization:'Bearer '+PAT, 'Content-Type':'application/json', 'Accept':'application/vnd.github+json' },
+          body: JSON.stringify({ message:'删除文章：'+f.name, sha:f.sha, branch:'main' })
+        }).then(function(r){
+          if(!r.ok){ return r.json().then(function(d){ throw new Error(d.message||('删除失败('+r.status+')')); }); }
+          return r.json();
+        }).then(function(){ alert('已删除：'+f.name); loadAdmin(); })
+          .catch(function(e){ alert('删除失败：'+e.message); });
+      }
+      if(savePat) savePat.addEventListener('click', savePatHandler);
+      if(patInput) patInput.addEventListener('keydown', function(e){ if(e.key==='Enter') savePatHandler(); });
+      setPatTip(); loadAdmin();
     })();
   </script>
 </body>
