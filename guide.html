@@ -198,6 +198,27 @@
   .pa-sign{margin-top:14px;padding-top:12px;border-top:1px solid var(--border-soft);color:var(--text-muted);font-size:13px;}
   .pa-sign b{color:var(--gold-strong);}
 
+  /* 玩家上传攻略：标签 + 搜索 + 表格 */
+  .guides-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:6px 0 14px;flex-wrap:wrap;}
+  .guides-tabs{display:flex;gap:8px;flex-wrap:wrap;}
+  .gtab{background:transparent;border:1px solid var(--border);color:var(--text-soft);padding:7px 16px;border-radius:20px;cursor:pointer;font-size:14px;font-family:var(--sans);transition:background .15s,border-color .15s,color .15s;}
+  .gtab:hover{color:var(--gold);border-color:var(--gold-dim);}
+  .gtab.active{background:rgba(227,176,75,.14);border-color:var(--gold);color:var(--gold-strong);}
+  .guides-search{flex:1;max-width:320px;}
+  .guides-search input{width:100%;background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:9px 13px;color:var(--text);font-size:14px;font-family:var(--sans);}
+  .guides-search input:focus{outline:none;border-color:var(--gold-dim);}
+  .guides-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;}
+  .guides-table{width:100%;border-collapse:collapse;background:var(--panel);}
+  .guides-table th{background:var(--bg-soft);color:var(--gold-dim);text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;padding:10px 14px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  .guides-table td{padding:12px 14px;border-bottom:1px solid var(--border-soft);font-size:14px;color:var(--text-soft);}
+  .guides-table tr:last-child td{border-bottom:none;}
+  .guides-table tr:hover td{background:rgba(227,176,75,.05);}
+  .guides-table .g-name a{color:var(--gold-strong);font-weight:600;}
+  .guides-table .g-name a:hover{text-decoration:underline;}
+  .guides-table .g-author,.guides-table .g-date{color:var(--text-muted);font-size:13px;white-space:nowrap;}
+  .guides-table .g-view a{color:var(--gold-strong);font-size:13px;}
+  .guides-empty{color:var(--text-muted);font-size:13px;padding:14px;border:1px dashed var(--border);border-radius:10px;margin-top:12px;}
+
   @media (max-width:980px){
     .layout{grid-template-columns:200px 1fr;}
     .right{display:none;}
@@ -303,7 +324,28 @@
       <section class="cat-view" data-cat="5">
         <h2 class="cat-title" id="player-guides">玩家上传攻略</h2>
         <p class="cat-sub">这里展示玩家上传、并已整理发布的攻略。</p>
-        <div id="playerGuideList"></div>
+
+        <div class="guides-toolbar">
+          <div class="guides-tabs" id="guidesTabs">
+            <button type="button" class="gtab active" data-tab="全部">全部</button>
+            <button type="button" class="gtab" data-tab="攻略">攻略</button>
+            <button type="button" class="gtab" data-tab="心得">心得</button>
+            <button type="button" class="gtab" data-tab="答疑">答疑</button>
+          </div>
+          <div class="guides-search">
+            <input id="guidesSearch" placeholder="搜索文章名 / 作者…" />
+          </div>
+        </div>
+
+        <div class="guides-table-wrap">
+          <table class="guides-table">
+            <thead>
+              <tr><th>文章名</th><th>作者</th><th>日期</th><th>查看</th></tr>
+            </thead>
+            <tbody id="playerGuideList"></tbody>
+          </table>
+        </div>
+        <div id="guidesEmpty" class="guides-empty" style="display:none;"></div>
         <a class="upload-btn" href="submit.html">投稿你的攻略</a>
       </section>
 
@@ -393,36 +435,62 @@
     showCat(1);
   </script>
   <script>
-    // ===== 玩家上传攻略：独立区块，直接渲染每篇文章的标题+正文+落款 =====
+    // ===== 玩家上传攻略：表格列表（标签 + 搜索过滤） =====
     (function(){
-      var list=document.getElementById('playerGuideList');
-      if(!list) return;
-      var OWNER='wz3723', REPO='FO4SO-KNOWLEDGE';
+      var tbody=document.getElementById('playerGuideList'), empty=document.getElementById('guidesEmpty'),
+          search=document.getElementById('guidesSearch'), tabs=document.getElementById('guidesTabs');
+      if(!tbody) return;
+      var OWNER='wz3723', REPO='FO4SO-KNOWLEDGE', SITE='https://wz3723.github.io/FO4SO-KNOWLEDGE';
+      var items=[], activeTab='全部';
       function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-      list.innerHTML='<div class="guide-empty">正在读取已发布的攻略…</div>';
       fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/articles')
         .then(function(r){ if(!r.ok) throw new Error('none'); return r.json(); })
         .then(function(files){
           var arr=(files||[]).filter(function(f){ return /\.html$/i.test(f.name); });
-          if(!arr.length){ list.innerHTML=''; return; }
-          Promise.all(arr.map(function(f){ return fetch(f.download_url).then(function(r){ return r.text(); }); }))
-          .then(function(all){
-            list.innerHTML='';
-            all.forEach(function(html){
-              var title=(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)||[])[1]||'';
-              title=title.replace(/<[^>]+>/g,'').trim();
-              var bodyC=(html.match(/<div class="body">([\s\S]*?)<\/div>\s*<p class="sign">/i)||[])[1]||'';
-              var author=(html.match(/<meta name="author" content="([^"]*)"/i)||[])[1]||'';
-              var el=document.createElement('div'); el.className='player-article';
-              var inner='';
-              if(title) inner+='<h3 class="pa-title">'+esc(title)+'</h3>';
-              inner+= bodyC;
-              if(author) inner+='<p class="pa-sign">—— 投稿：<b>'+esc(author)+'</b></p>';
-              el.innerHTML=inner; list.appendChild(el);
+          return Promise.all(arr.map(function(f){
+            return fetch(f.download_url).then(function(r){ return r.text(); }).then(function(html){
+              var title=((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)||[])[1]||'').replace(/<[^>]+>/g,'').trim();
+              var author=((html.match(/<meta name="author" content="([^"]*)"/i)||[])[1]||'')||'匿名';
+              var date=((html.match(/<meta name="date" content="([^"]*)"/i)||[])[1]||'');
+              var cat=((html.match(/<meta name="category" content="([^"]*)"/i)||[])[1]||'攻略');
+              return { title: title||f.name, author: author, date: date, cat: cat, url: SITE+'/articles/'+f.name };
             });
-          }).catch(function(){ list.innerHTML='<div class="guide-empty">读取失败，请稍后刷新。</div>'; });
+          }));
         })
-        .catch(function(){ list.innerHTML=''; });
+        .then(function(list){ items=list; render(); })
+        .catch(function(){ items=[]; render(); });
+
+      function render(){
+        var q=(search.value||'').trim().toLowerCase();
+        var rows=items.filter(function(it){
+          var catOk = (activeTab==='全部') || (it.cat===activeTab);
+          var qOk = !q || it.title.toLowerCase().indexOf(q)>=0 || it.author.toLowerCase().indexOf(q)>=0;
+          return catOk && qOk;
+        });
+        tbody.innerHTML='';
+        if(!rows.length){ empty.style.display='block'; empty.textContent='没有匹配的文章'; }
+        else {
+          empty.style.display='none';
+          rows.forEach(function(it){
+            var tr=document.createElement('tr');
+            tr.innerHTML='<td class="g-name"><a target="_blank" href="'+it.url+'">'+esc(it.title)+'</a></td>'+
+              '<td class="g-author">'+esc(it.author)+'</td>'+
+              '<td class="g-date">'+esc(it.date||'—')+'</td>'+
+              '<td class="g-view"><a target="_blank" href="'+it.url+'">查看</a></td>';
+            tbody.appendChild(tr);
+          });
+        }
+      }
+      if(tabs){
+        tabs.addEventListener('click',function(e){
+          var b=e.target.closest('.gtab'); if(!b) return;
+          activeTab=b.getAttribute('data-tab');
+          [].forEach.call(tabs.querySelectorAll('.gtab'),function(x){ x.classList.toggle('active', x===b); });
+          render();
+        });
+      }
+      if(search){ search.addEventListener('input', render); }
+      render();
     })();
   </script>
   <script src="search.js"></script>
