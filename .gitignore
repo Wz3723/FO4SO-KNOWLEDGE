@@ -23,3 +23,7 @@ Thumbs.db
 issue-to-article.html
 server.js
 启动站长工具.bat
+PAT.txt
+*.token
+*.secret
+.env
