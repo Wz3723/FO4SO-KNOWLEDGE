@@ -618,18 +618,21 @@
       var OWNER='wz3723', REPO='FO4SO-KNOWLEDGE';
       var items=[], activeTab='全部';
       function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-      fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/articles')
+      // 用 jsDelivr（无 GitHub 60次限流、国内可访问）：列表 + 内容
+      fetch('https://data.jsdelivr.com/v1/packages/gh/'+OWNER+'/'+REPO+'@main?structure=flat')
         .then(function(r){ if(!r.ok) throw new Error('none'); return r.json(); })
-        .then(function(files){
-          var arr=(files||[]).filter(function(f){ return /\.html$/i.test(f.name); });
-          return Promise.all(arr.map(function(f){
-            return fetch(f.download_url).then(function(r){ return r.text(); }).then(function(html){
+        .then(function(data){
+          var names=(data.files||[]).map(function(f){ return f.name; })
+            .filter(function(n){ return /^\/articles\//.test(n) && /\.html$/i.test(n); });
+          return Promise.all(names.map(function(name){
+            var path=name.replace(/^\//,'');
+            return fetch('https://cdn.jsdelivr.net/gh/'+OWNER+'/'+REPO+'@main/'+path).then(function(r){ return r.text(); }).then(function(html){
               var title=((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)||[])[1]||'').replace(/<[^>]+>/g,'').trim();
               var author=((html.match(/<meta name="author" content="([^"]*)"/i)||[])[1]||'')||'匿名';
               var date=((html.match(/<meta name="date" content="([^"]*)"/i)||[])[1]||'');
               var cat=((html.match(/<meta name="category" content="([^"]*)"/i)||[])[1]||'攻略');
               var bodyC=(html.match(/<div class="body">([\s\S]*?)<\/div>\s*<p class="sign">/i)||[])[1]||'';
-              return { title: title||f.name, author: author, date: date, cat: cat, body: bodyC };
+              return { title: title||path.split('/').pop(), author: author, date: date, cat: cat, body: bodyC };
             });
           }));
         })
