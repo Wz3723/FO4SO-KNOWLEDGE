@@ -231,13 +231,12 @@
   .content{position:relative;border-radius:18px;padding:26px 28px;margin:6px 0;
     background-image:
       linear-gradient(90deg, rgba(244,205,120,0) 0%, rgba(244,205,120,1) 30%, rgba(244,205,120,1) 70%, rgba(244,205,120,0) 100%),
-      linear-gradient(90deg, rgba(244,205,120,0) 0%, rgba(244,205,120,1) 30%, rgba(244,205,120,1) 70%, rgba(244,205,120,0) 100%),
       linear-gradient(180deg, rgba(244,205,120,0) 0%, rgba(244,205,120,1) 30%, rgba(244,205,120,1) 70%, rgba(244,205,120,0) 100%),
       linear-gradient(180deg, rgba(244,205,120,0) 0%, rgba(244,205,120,1) 30%, rgba(244,205,120,1) 70%, rgba(244,205,120,0) 100%),
       radial-gradient(60% 55% at 50% 0%,rgba(227,176,75,.13),transparent 70%),
       radial-gradient(45% 45% at 90% 100%,rgba(227,176,75,.10),transparent 70%);
-    background-size:100% 2px, 100% 2px, 2px 100%, 2px 100%, 100% 100%, 100% 100%;
-    background-position:0 0, 0 100%, 0 0, 100% 0, center, center;
+    background-size:100% 2px, 2px 100%, 2px 100%, 100% 100%, 100% 100%;
+    background-position:0 100%, 0 0, 100% 0, center, center;
     background-repeat:no-repeat;
     box-shadow:0 0 0 3px rgba(0,0,0,.35), 0 0 34px rgba(227,176,75,.18), inset 0 0 46px rgba(0,0,0,.55);}
   .content::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
@@ -328,27 +327,9 @@
 </head>
 <body>
 
-  <!-- ===== Top Nav ===== -->
-  <nav class="nav">
-    <a class="brand" href="index.html">FO4SO<span class="dot">.</span>KNOWLEDGE</a>
-    <div class="search-wrap">
-      <label class="search">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input type="text" placeholder="搜索文档" />
-        <kbd>Ctrl K</kbd>
-      </label>
-      <div class="search-results" id="searchResults"></div>
-    </div>
-    <div class="nav-links">
-      <a href="index.html">首页</a>
-      <a href="notes.html">笔记</a>
-      <a href="submit.html">投稿</a>
-      <div class="nav-icons">
-        <a class="icon-btn" href="#" aria-label="目录"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/></svg></a>
-        <a class="share" href="#" id="shareBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v13M8 7l4-4 4 4"/></svg>分享此页</a>
-      </div>
-    </div>
-  </nav>
+  <!-- ===== Top Nav（仅首页显示，指南页侧栏提供导航） ===== -->
+
+  <div class="layout">
 
   <!-- ===== 3-column layout ===== -->
   <div class="layout">
@@ -687,6 +668,5 @@
       render();
     })();
   </script>
-  <script src="search.js"></script>
 </body>
 </html>
