@@ -219,6 +219,32 @@
   .guides-table .g-view a{color:var(--gold-strong);font-size:13px;}
   .guides-empty{color:var(--text-muted);font-size:13px;padding:14px;border:1px dashed var(--border);border-radius:10px;margin-top:12px;}
 
+  /* 表格行点击 & 本页内联查看文章 */
+  .guides-row{cursor:pointer;}
+  .guides-row:hover td{background:rgba(227,176,75,.06);}
+  .cv-open{color:var(--gold-strong);font-weight:600;cursor:pointer;}
+  .cv-open:hover{text-decoration:underline;}
+  .cat-article{margin-top:22px;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:24px 26px;}
+  .cv-bar{margin-bottom:16px;}
+  .cv-back{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:var(--gold-strong);border:1px solid var(--gold-dim);background:transparent;padding:8px 16px;border-radius:6px;cursor:pointer;font-family:var(--sans);transition:background .15s;}
+  .cv-back:hover{background:rgba(227,176,75,.10);}
+  .cv-title{font-size:24px;font-weight:800;color:#f4f0e0;margin:0 0 10px;line-height:1.3;}
+  .cv-meta{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--text-muted);margin-bottom:16px;}
+  .cv-meta b{color:var(--gold-strong);}
+  .cv-body{font-size:15px;color:var(--text-soft);border-top:1px solid var(--border-soft);padding-top:16px;}
+  .cv-body h2,.cv-body h3,.cv-body h4{color:var(--gold);margin:18px 0 8px;line-height:1.35;}
+  .cv-body p{margin:12px 0;}
+  .cv-body ul,.cv-body ol{padding-left:22px;margin:12px 0;}
+  .cv-body li{margin:6px 0;}
+  .cv-body a{color:var(--gold-strong);text-decoration:underline;}
+  .cv-body img{max-width:100%;border-radius:8px;margin:12px 0;border:1px solid var(--border-soft);}
+  .cv-body blockquote{border-left:3px solid var(--gold-dim);background:var(--bg-soft);padding:12px 16px;margin:14px 0;border-radius:0 8px 8px 0;}
+  .cv-body table{border-collapse:collapse;width:100%;margin:14px 0;}.cv-body table td,.cv-body table th{border:1px solid var(--border);padding:8px 12px;}.cv-body table th{color:var(--gold);}
+  .cv-body pre{background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:12px 14px;overflow:auto;}.cv-body code{font-family:var(--mono);color:#b8d4c8;}
+  .cv-sign{margin-top:14px;padding-top:12px;border-top:1px solid var(--border-soft);color:var(--text-muted);font-size:13px;}
+  .cv-sign b{color:var(--gold-strong);}
+  .cv-none{color:var(--text-muted);}
+
   @media (max-width:980px){
     .layout{grid-template-columns:200px 1fr;}
     .right{display:none;}
@@ -325,7 +351,7 @@
         <h2 class="cat-title" id="player-guides">玩家上传攻略</h2>
         <p class="cat-sub">这里展示玩家上传、并已整理发布的攻略。</p>
 
-        <div class="guides-toolbar">
+        <div class="guides-toolbar" id="guidesToolbar">
           <div class="guides-tabs" id="guidesTabs">
             <button type="button" class="gtab active" data-tab="全部">全部</button>
             <button type="button" class="gtab" data-tab="攻略">攻略</button>
@@ -337,7 +363,7 @@
           </div>
         </div>
 
-        <div class="guides-table-wrap">
+        <div class="guides-table-wrap" id="guidesTableWrap">
           <table class="guides-table">
             <thead>
               <tr><th>文章名</th><th>作者</th><th>日期</th><th>查看</th></tr>
@@ -346,6 +372,9 @@
           </table>
         </div>
         <div id="guidesEmpty" class="guides-empty" style="display:none;"></div>
+
+        <!-- 内联查看文章（不跳转，直接在本分类内展开） -->
+        <div id="playerArticleView" class="cat-article" hidden></div>
         <a class="upload-btn" href="submit.html">投稿你的攻略</a>
       </section>
 
@@ -435,12 +464,14 @@
     showCat(1);
   </script>
   <script>
-    // ===== 玩家上传攻略：表格列表（标签 + 搜索过滤） =====
+    // ===== 玩家上传攻略：表格列表 + 本页内联查看文章（不跳转） =====
     (function(){
       var tbody=document.getElementById('playerGuideList'), empty=document.getElementById('guidesEmpty'),
-          search=document.getElementById('guidesSearch'), tabs=document.getElementById('guidesTabs');
+          search=document.getElementById('guidesSearch'), tabs=document.getElementById('guidesTabs'),
+          toolbar=document.getElementById('guidesToolbar'), tableWrap=document.getElementById('guidesTableWrap'),
+          viewer=document.getElementById('playerArticleView');
       if(!tbody) return;
-      var OWNER='wz3723', REPO='FO4SO-KNOWLEDGE', SITE='https://wz3723.github.io/FO4SO-KNOWLEDGE';
+      var OWNER='wz3723', REPO='FO4SO-KNOWLEDGE';
       var items=[], activeTab='全部';
       function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
       fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/articles')
@@ -453,7 +484,8 @@
               var author=((html.match(/<meta name="author" content="([^"]*)"/i)||[])[1]||'')||'匿名';
               var date=((html.match(/<meta name="date" content="([^"]*)"/i)||[])[1]||'');
               var cat=((html.match(/<meta name="category" content="([^"]*)"/i)||[])[1]||'攻略');
-              return { title: title||f.name, author: author, date: date, cat: cat, url: SITE+'/articles/'+f.name };
+              var bodyC=(html.match(/<div class="body">([\s\S]*?)<\/div>\s*<p class="sign">/i)||[])[1]||'';
+              return { title: title||f.name, author: author, date: date, cat: cat, body: bodyC };
             });
           }));
         })
@@ -463,32 +495,42 @@
       function render(){
         var q=(search.value||'').trim().toLowerCase();
         var rows=items.filter(function(it){
-          var catOk = (activeTab==='全部') || (it.cat===activeTab);
-          var qOk = !q || it.title.toLowerCase().indexOf(q)>=0 || it.author.toLowerCase().indexOf(q)>=0;
-          return catOk && qOk;
+          var ck=(activeTab==='全部')||(it.cat===activeTab);
+          var qk=!q||it.title.toLowerCase().indexOf(q)>=0||it.author.toLowerCase().indexOf(q)>=0;
+          return ck&&qk;
         });
         tbody.innerHTML='';
         if(!rows.length){ empty.style.display='block'; empty.textContent='没有匹配的文章'; }
         else {
           empty.style.display='none';
           rows.forEach(function(it){
-            var tr=document.createElement('tr');
-            tr.innerHTML='<td class="g-name"><a target="_blank" href="'+it.url+'">'+esc(it.title)+'</a></td>'+
+            var tr=document.createElement('tr'); tr.className='guides-row';
+            tr.innerHTML='<td class="g-name"><span class="cv-open">'+esc(it.title)+'</span></td>'+
               '<td class="g-author">'+esc(it.author)+'</td>'+
               '<td class="g-date">'+esc(it.date||'—')+'</td>'+
-              '<td class="g-view"><a target="_blank" href="'+it.url+'">查看</a></td>';
+              '<td class="g-view"><span class="cv-open">查看</span></td>';
+            tr.addEventListener('click',function(){ viewArticle(it); });
             tbody.appendChild(tr);
           });
         }
       }
-      if(tabs){
-        tabs.addEventListener('click',function(e){
-          var b=e.target.closest('.gtab'); if(!b) return;
-          activeTab=b.getAttribute('data-tab');
-          [].forEach.call(tabs.querySelectorAll('.gtab'),function(x){ x.classList.toggle('active', x===b); });
-          render();
-        });
+
+      function viewArticle(it){
+        var words=(it.body||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().length;
+        viewer.innerHTML='<div class="cv-bar"><button type="button" class="cv-back" id="cvBack">← 返回列表</button></div>'+
+          '<h2 class="cv-title">'+esc(it.title)+'</h2>'+
+          '<div class="cv-meta"><span>作者 <b>'+esc(it.author)+'</b></span><span>日期 <b>'+esc(it.date||'—')+'</b></span><span>字数 <b>'+words+'</b></span></div>'+
+          '<div class="cv-body">'+(it.body||'<p class="cv-none">该文章暂无内容。</p>')+'</div>'+
+          '<p class="cv-sign">—— 投稿：<b>'+esc(it.author)+'</b></p>';
+        viewer.hidden=false;
+        toolbar.style.display='none'; tableWrap.style.display='none'; empty.style.display='none';
+        viewer.scrollIntoView({behavior:'smooth',block:'start'});
+        var b=document.getElementById('cvBack');
+        if(b) b.addEventListener('click',function(){ backToList(); });
       }
+      function backToList(){ viewer.hidden=true; viewer.innerHTML=''; toolbar.style.display=''; tableWrap.style.display=''; }
+
+      if(tabs){ tabs.addEventListener('click',function(e){ var b=e.target.closest('.gtab'); if(!b) return; activeTab=b.getAttribute('data-tab'); [].forEach.call(tabs.querySelectorAll('.gtab'),function(x){ x.classList.toggle('active',x===b); }); render(); }); }
       if(search){ search.addEventListener('input', render); }
       render();
     })();
