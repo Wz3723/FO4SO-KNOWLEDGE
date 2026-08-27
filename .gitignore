@@ -4,7 +4,19 @@ desktop-dump.txt
 desktop-package.json.bak-*
 phq9-survey.html
 
+# 无关键值图片（站点用 SVG/字体；如需收录某张图片，用 ! 或删掉对应行并在该目录保留）
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+
 # 常见忽略
 node_modules/
 .DS_Store
 Thumbs.db
+*.log
+
+# 本地机密/状态（勿入库）
+.dev.vars
+.wrangler/

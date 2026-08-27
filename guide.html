@@ -79,6 +79,14 @@
   .icon-btn:hover{background:var(--panel);color:var(--gold);}
   .share{display:inline-flex;align-items:center;gap:7px;font-size:14px;color:var(--text-soft);padding:6px 10px;border-radius:8px;transition:background .15s,color .15s;white-space:nowrap;}
   .share:hover{background:var(--panel);color:var(--gold);}
+  .toast{
+    position:fixed;left:50%;bottom:36px;transform:translateX(-50%) translateY(16px);
+    background:#151517;border:1px solid var(--gold-dim);border-radius:9px;
+    padding:10px 20px;font-size:14px;color:var(--gold-strong);
+    box-shadow:0 12px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;z-index:200;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
   /* ===== 3-column layout ===== */
   .layout{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:230px 1fr 210px;gap:0;align-items:start;}
@@ -155,6 +163,15 @@
   .back .arr{font-family:var(--mono);transition:transform .15s;}
   .back:hover .arr{transform:translateX(-3px);}
 
+  #player-guides{scroll-margin-top:80px;}
+  .guide-item{display:block;padding:13px 15px;border:1px solid var(--border);border-radius:10px;margin:10px 0;transition:background .15s,border-color .15s;}
+  .guide-item:hover{background:rgba(227,176,75,.06);border-color:var(--gold-dim);}
+  .guide-item .g-t{color:var(--gold-strong);font-size:15px;font-weight:600;}
+  .guide-item .g-m{color:var(--text-muted);font-size:12px;font-family:var(--mono);margin-top:4px;}
+  .guide-empty{color:var(--text-muted);font-size:13px;padding:13px 15px;border:1px dashed var(--border);border-radius:10px;}
+  .upload-btn{display:inline-flex;align-items:center;gap:8px;margin-top:18px;padding:12px 20px;border:1px solid var(--gold-dim);border-radius:6px;color:var(--gold-strong);font-size:14px;font-weight:700;transition:background .15s,transform .12s;}
+  .upload-btn:hover{background:rgba(227,176,75,.10);transform:translateY(-2px);}
+
   @media (max-width:980px){
     .layout{grid-template-columns:200px 1fr;}
     .right{display:none;}
@@ -183,10 +200,10 @@
       <a href="index.html">首页</a>
       <a href="#">笔记</a>
       <a href="#">最近更新</a>
+      <a href="submit.html">投稿</a>
       <div class="nav-icons">
-        <a class="icon-btn" href="#" aria-label="语言"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21M12 3c-2.5 2.6-3.8 5.7-3.8 9S9.5 18.4 12 21"/></svg></a>
         <a class="icon-btn" href="#" aria-label="目录"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/></svg></a>
-        <a class="share" href="#"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v13M8 7l4-4 4 4"/></svg>分享此页</a>
+        <a class="share" href="#" id="shareBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v13M8 7l4-4 4 4"/></svg>分享此页</a>
       </div>
     </div>
   </nav>
@@ -206,7 +223,8 @@
             <li><a class="sub" href="#">└ 手把手带你入门</a></li>
           </ul>
         </li>
-        <li><a href="#"><span class="idx">5</span>常见问题与修复<span class="chev">&gt;</span></a></li>
+        <li><a href="#player-guides"><span class="idx">5</span>玩家上传攻略<span class="chev">&gt;</span></a></li>
+        <li><a href="#"><span class="idx">6</span>常见问题与修复<span class="chev">&gt;</span></a></li>
       </ul>
       <a class="back-home" href="index.html"><span class="arr">←</span>返回首页</a>
     </aside>
@@ -236,6 +254,11 @@
           整合包持续维护与更新，并广泛收集玩家的合理意见。若你有改进建议，欢迎在交流群中反馈：748570653。
         </div>
         <p>这套体系并非一蹴而就，而是经过多次版本迭代慢慢打磨而成。每一个模块，都对应一段真实的游玩体会。</p>
+
+        <h2 class="sec" id="player-guides">玩家上传攻略</h2>
+        <p>这里展示玩家上传、并已整理发布的攻略。点击标题即可阅读；你也可以把自己的攻略发布上来。</p>
+        <div id="playerGuideList"></div>
+        <a class="upload-btn" href="submit.html">投稿你的攻略</a>
       </article>
     </main>
 
@@ -245,6 +268,7 @@
       <div class="toc">
         <a href="#sec1">—— FO4SO.KNOWLEDGE</a>
         <a class="l2" href="#sec2">为什么选择生存大修</a>
+        <a href="#player-guides">玩家上传攻略</a>
       </div>
       <p class="meta-label">反馈者</p>
       <div class="toc">
@@ -258,6 +282,8 @@
 
   </div>
 
+  <div class="toast" id="toast"></div>
+
   <script>
     document.addEventListener('keydown', e => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
@@ -266,6 +292,53 @@
         if (input) input.focus();
       }
     });
+
+    // 分享此页：复制当前链接 + 提示
+    function copyText(t){
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        return navigator.clipboard.writeText(t).then(()=>true).catch(()=>legacyCopy(t));
+      }
+      return Promise.resolve(legacyCopy(t));
+    }
+    function legacyCopy(t){
+      var ta=document.createElement('textarea');
+      ta.value=t;ta.style.position='fixed';ta.style.opacity='0';
+      document.body.appendChild(ta);ta.select();var ok=false;
+      try{ok=document.execCommand('copy');}catch(e){}
+      document.body.removeChild(ta);return ok;
+    }
+    function showToast(msg){
+      var el=document.getElementById('toast');if(!el)return;
+      el.textContent=msg;el.classList.add('show');
+      clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove('show');},1900);
+    }
+    var shareBtn=document.getElementById('shareBtn');
+    if(shareBtn){
+      shareBtn.addEventListener('click',function(e){
+        e.preventDefault();
+        copyText(location.href).then(function(ok){ showToast(ok?'链接已复制':'复制失败，请手动复制'); });
+      });
+    }
+  </script>
+  <script>
+    // ===== 玩家上传攻略列表 =====
+    (function(){
+      var list=document.getElementById('playerGuideList');
+      if(!list) return;
+      var GUIDES = [
+        // {title:'攻略标题', url:'articles/xxx.html', author:'作者'}
+      ];
+      if(!GUIDES.length){
+        list.innerHTML='<div class="guide-empty">还没有上传的攻略。用下方“投稿你的攻略”把你的攻略发布上来吧。</div>';
+        return;
+      }
+      GUIDES.forEach(function(g){
+        var a=document.createElement('a'); a.href=g.url; a.className='guide-item';
+        var t=document.createElement('div'); t.className='g-t'; t.textContent=g.title;
+        var m=document.createElement('div'); m.className='g-m'; m.textContent=(g.author?g.author+' · ':'')+g.url;
+        a.appendChild(t); a.appendChild(m); list.appendChild(a);
+      });
+    })();
   </script>
   <script src="search.js"></script>
 </body>
