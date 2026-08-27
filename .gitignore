@@ -27,3 +27,4 @@ PAT.txt
 *.token
 *.secret
 .env
+_backup_before_type
