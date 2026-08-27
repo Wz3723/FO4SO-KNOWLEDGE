@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FO4SO.KNOWLEDGE // Issue 转文章</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<style>
+  :root{
+    --bg:#0b0b0c;--bg-soft:#101012;--panel:#131315;--panel-2:#161618;
+    --border:#26262a;--border-soft:#1d1d20;
+    --gold:#e3b04b;--gold-strong:#f2c76b;--gold-dim:#a8873f;
+    --crimson:#8e2a26;--crimson-hover:#a63530;--teal:#6fbfa5;
+    --text:#d8ccae;--text-soft:#ab9f83;--text-muted:#7d7460;
+    --mono:'JetBrains Mono','Fira Code',Consolas,'SF Mono',monospace;
+    --sans:'PingFang SC','Microsoft YaHei','Noto Sans SC',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  ::selection{background:rgba(227,176,75,.25);color:var(--gold-strong);}
+  a{color:inherit;text-decoration:none;}
+  .nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:24px;padding:12px 28px;background:rgba(11,11,12,.86);backdrop-filter:blur(10px);}
+  .brand{font-weight:800;letter-spacing:.04em;font-size:16px;white-space:nowrap;background-image:linear-gradient(180deg,#fff3c2 0%,#ffdd85 35%,#eab54a 65%,#d6982a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 6px rgba(255,221,133,.30));}
+  .brand .dot{color:transparent;-webkit-text-fill-color:transparent;}
+  .nav-links{display:flex;align-items:center;gap:22px;margin-left:auto;}
+  .nav-links a{font-size:14px;color:var(--text-soft);transition:color .15s;white-space:nowrap;}
+  .nav-links a:hover{color:var(--gold);}
+  .nav-links a.active{color:var(--gold-strong);}
+
+  .wrap{max-width:960px;margin:0 auto;padding:36px 24px 80px;}
+  .page-title{font-size:clamp(22px,3.5vw,32px);font-weight:800;color:#f4f0e0;margin-bottom:6px;}
+  .page-sub{color:var(--text-soft);font-size:15px;margin-bottom:24px;}
+
+  .input-row{display:flex;gap:12px;align-items:center;}
+  .input-row input{flex:1;background:var(--bg-soft);border:1px solid var(--border);border-radius:9px;padding:12px 14px;color:var(--text);font-family:var(--sans);font-size:14px;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;font-size:14px;font-weight:700;border-radius:5px;cursor:pointer;border:1px solid var(--gold-dim);color:var(--gold-strong);background:transparent;transition:background .18s,border-color .18s,transform .12s;white-space:nowrap;}
+  .btn:hover{background:rgba(227,176,75,.10);border-color:var(--gold);}
+  .btn.primary{background:var(--crimson);border-color:var(--crimson);color:#f5e6d8;}
+  .btn.primary:hover{background:var(--crimson-hover);border-color:var(--crimson-hover);}
+  .btn.ghost{background:transparent;}
+  #status{font-size:14px;color:var(--gold);margin-top:12px;min-height:20px;}
+  #status.err{color:var(--crimson-hover);}
+
+  .result{display:none;margin-top:26px;}
+  .result.show{display:block;}
+  .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:13px;color:var(--text-soft);margin-bottom:16px;}
+  .meta .n{color:var(--gold-dim);font-family:var(--mono);}
+  .actions{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:22px;}
+
+  .article-preview{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:30px 32px;}
+  .article-preview h1{font-size:26px;color:#f4f0e0;margin:0 0 18px;line-height:1.3;}
+  .article-body{font-size:15px;color:var(--text-soft);}
+  .article-body h1,.article-body h2,.article-body h3{color:var(--gold);margin:22px 0 10px;line-height:1.35;}
+  .article-body h2{font-size:21px;}.article-body h3{font-size:18px;}
+  .article-body p{margin:14px 0;}.article-body ul,.article-body ol{padding-left:22px;margin:14px 0;}.article-body li{margin:6px 0;}
+  .article-body a{color:var(--gold-strong);text-decoration:underline;}
+  .article-body img{max-width:100%;border-radius:8px;margin:14px 0;border:1px solid var(--border-soft);}
+  .article-body blockquote{border-left:3px solid var(--gold-dim);background:var(--bg-soft);padding:12px 16px;margin:16px 0;color:var(--text-soft);border-radius:0 8px 8px 0;}
+  .article-body table{border-collapse:collapse;width:100%;margin:16px 0;}.article-body table td,.article-body table th{border:1px solid var(--border);padding:8px 12px;}.article-body table th{color:var(--gold);}
+  .article-body pre{background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:12px 14px;overflow:auto;}
+  .article-body code{font-family:var(--mono);font-size:13px;color:#b8d4c8;}
+  .sign{margin-top:28px;padding-top:16px;border-top:1px solid var(--border-soft);color:var(--text-muted);font-size:14px;}
+  .sign b{color:var(--gold-strong);}
+
+  footer{text-align:center;padding:26px 20px 40px;border-top:1px solid var(--border-soft);font-size:13px;color:var(--text-muted);}
+  footer .mono{font-family:var(--mono);color:var(--teal);}
+</style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="brand" href="index.html">FO4SO<span class="dot">.</span>KNOWLEDGE</a>
+    <div class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="guide.html">目录</a>
+      <a href="submit.html">投稿</a>
+      <a href="issue-to-article.html" class="active">Issue 转文章</a>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <h1 class="page-title">Issue 转文章</h1>
+    <p class="page-sub">粘贴投稿 Issue 的链接（或 Issue 号），即可生成排版好的文章页，**只含标题 / 正文 / 落款，自动剔除联系方式**。</p>
+
+    <div class="input-row">
+      <input id="issueInput" placeholder="如 https://github.com/wz3723/FO4SO-KNOWLEDGE/issues/1  或 直接填 1" />
+      <button class="btn primary" id="loadBtn">加载</button>
+    </div>
+    <div id="status"></div>
+
+    <section class="result" id="result">
+      <div class="meta" id="meta"></div>
+      <div class="actions">
+        <button class="btn primary" id="downloadBtn">下载文章页 (.html)</button>
+        <button class="btn ghost" id="copyBtn">复制 HTML 片段</button>
+      </div>
+      <div class="article-preview">
+        <h1 id="artTitle">文章标题</h1>
+        <div class="article-body" id="artBody"></div>
+        <div class="sign" id="artSign"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p class="mono">FO4SO_KNOWLEDGE // VERSION：1.5.6</p>
+    <p>用 <a href="#">WZ</a> 构建 · 主题灵感来自终端美学</p>
+  </footer>
+
+  <script src="lib/marked.min.js"></script>
+  <script>
+    (function(){
+      var OWNER='wz3723', REPO='FO4SO-KNOWLEDGE';
+      var input=document.getElementById('issueInput'), status=document.getElementById('status'),
+          result=document.getElementById('result'), meta=document.getElementById('meta'),
+          artTitle=document.getElementById('artTitle'), artBody=document.getElementById('artBody'),
+          artSign=document.getElementById('artSign');
+      var cur={title:'', bodyHtml:'', author:''};
+      if (window.marked) marked.setOptions({ breaks: true, gfm: true });
+
+      function set(s, err){ status.textContent=s||''; status.className = err ? 'err' : ''; }
+
+      function parseNumber(v){
+        v=(v||'').trim();
+        var m = v.match(/issues\/(\d+)/) || v.match(/(\d+)$/);
+        return m ? m[1] : null;
+      }
+
+      function extract(body, fbAuthor){
+        var author = fbAuthor || '匿名';
+        var am = body.match(/\*\*\s*作者\s*\*\*\s*[：:]\s*(.+)/);
+        if(am) author = am[1].trim();
+        var parts = body.split(/\n\s*-{3,}\s*\n/);
+        var content = parts.length > 1 ? parts.slice(1).join('\n') : body;
+        content = content.split('\n').filter(function(line){
+          return !/^\s*\*\*\s*(作者|联系方式)\s*\*\*\s*[：:]/.test(line);
+        }).join('\n').replace(/^\s+|\s+$/g,'');
+        return { author: author, content: content };
+      }
+
+      document.getElementById('loadBtn').addEventListener('click', load);
+      input.addEventListener('keydown', function(e){ if(e.key==='Enter') load(); });
+
+      function load(){
+        var n = parseNumber(input.value);
+        if(!n){ set('请输入有效的 Issue 链接或编号', true); return; }
+        set('正在拉取 Issue #'+n+' …');
+        fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/issues/'+n)
+          .then(function(r){ if(r.status===404){ throw new Error('Issue 不存在'); } if(!r.ok){ throw new Error('拉取失败('+r.status+')'); } return r.json(); })
+          .then(function(issue){
+            var title = issue.title.replace(/^\[投稿\]\s*/,'');
+            var ex = extract(issue.body||'', issue.user && issue.user.login);
+            cur.title = title; cur.author = ex.author; cur.bodyHtml = marked.parse(ex.content||'');
+            render();
+            set('已加载 Issue #'+n+'，共 ' + (ex.content||'').length + ' 字符');
+          })
+          .catch(function(e){ set('加载失败：' + e.message, true); });
+      }
+
+      function render(){
+        artTitle.textContent = cur.title;
+        artBody.innerHTML = cur.bodyHtml;
+        artSign.innerHTML = '—— 投稿：<b>' + escapeHtml(cur.author) + '</b>';
+        meta.innerHTML =
+          '<span><span class="n">①</span>标题<b>'+escapeHtml(cur.title)+'</b></span>'+
+          '<span><span class="n">②</span>作者<b>'+escapeHtml(cur.author)+'</b></span>'+
+          '<span><span class="n">③</span>正文<b>'+(cur.bodyHtml.length)+' 字符</b></span>';
+        result.classList.add('show');
+        window.scrollTo({top: result.offsetTop - 60, behavior:'smooth'});
+      }
+
+      function escapeHtml(s){ return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+      document.getElementById('downloadBtn').addEventListener('click', function(){
+        if(!cur.title) return;
+        var page = buildArticlePage(cur.title, cur.bodyHtml, cur.author);
+        var blob = new Blob([page], {type:'text/html;charset=utf-8'});
+        var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+        a.download = (cur.title.replace(/[^\w\u4e00-\u9fa5-]+/g,'_')||'article') + '.html';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); },2000);
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function(){
+        var frag = '<h1 class="article-title">'+escapeHtml(cur.title)+'</h1>\n<div class="article-body">\n'+cur.bodyHtml+'\n</div>\n<p class="article-sign">—— 投稿：'+escapeHtml(cur.author)+'</p>';
+        copyText(frag).then(function(ok){ set(ok?'已复制文章片段':'复制失败，请手动复制'); });
+      });
+
+      function copyText(t){
+        if(navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t).then(()=>true).catch(()=>legacy(t));
+        return Promise.resolve(legacy(t));
+      }
+      function legacy(t){ var ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); var ok=false; try{ ok=document.execCommand('copy'); }catch(e){} document.body.removeChild(ta); return ok; }
+
+      function buildArticlePage(title, bodyHtml, author){
+        var css = [
+          'body{background:#0b0b0c;color:#d8ccae;font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;line-height:1.8;margin:0;}',
+          '.article{max-width:820px;margin:0 auto;padding:48px 24px 80px;}',
+          'h1{color:#f4f0e0;font-size:30px;line-height:1.3;text-shadow:0 0 22px rgba(227,176,75,.18);}',
+          '.meta{color:#7d7460;font-size:13px;margin:14px 0 28px;}',
+          '.body{font-size:16px;color:#ab9f83;}',
+          '.body h1,.body h2,.body h3{color:#e3b04b;margin:26px 0 12px;line-height:1.35;}',
+          '.body p{margin:16px 0;}',
+          '.body ul,.body ol{padding-left:24px;margin:16px 0;}',
+          '.body li{margin:6px 0;}',
+          '.body a{color:#f2c76b;text-decoration:underline;}',
+          '.body img{max-width:100%;border-radius:8px;margin:16px 0;display:block;}',
+          '.body blockquote{border-left:3px solid #a8873f;background:#131315;padding:12px 16px;margin:16px 0;color:#ab9f83;border-radius:0 8px 8px 0;}',
+          '.body pre{background:#101012;border:1px solid #26262a;border-radius:8px;padding:12px 14px;overflow:auto;}',
+          '.body code{font-family:Consolas,monospace;color:#b8d4c8;}',
+          '.sign{margin-top:32px;padding-top:16px;border-top:1px solid #1d1d20;color:#7d7460;font-size:14px;}',
+          '.sign b{color:#f2c76b;}',
+          '.foot{max-width:820px;margin:40px auto 0;text-align:center;color:#7d7460;font-size:13px;border-top:1px solid #1d1d20;padding:22px;}',
+          'a{color:inherit;text-decoration:none;}'
+        ].join('\n');
+        return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8"/>\n<meta name="viewport" content="width=device-width, initial-scale=1.0"/>\n<title>'+escapeHtml(title)+'</title>\n<meta name="author" content="'+escapeHtml(author||'')+'"/>\n<style>'+css+'</style>\n</head>\n<body>\n<article class="article">\n<h1>'+escapeHtml(title)+'</h1>\n<div class="meta">FO4SO.KNOWLEDGE · ' + escapeHtml(author||'') + '</div>\n<div class="body">'+bodyHtml+'</div>\n<p class="sign">—— 投稿：<b>'+escapeHtml(author||'匿名')+'</b></p>\n</article>\n<footer class="foot">FO4SO.KNOWLEDGE // VERSION：1.5.6</footer>\n</body>\n</html>';
+      }
+    })();
+  </script>
+</body>
+</html>
