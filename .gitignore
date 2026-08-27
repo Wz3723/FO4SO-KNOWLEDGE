@@ -1,0 +1,10 @@
+# —— 与 FO4SO 站点无关的工作区文件（不进版本库）——
+dsh-web-dev.tar.gz
+desktop-dump.txt
+desktop-package.json.bak-*
+phq9-survey.html
+
+# 常见忽略
+node_modules/
+.DS_Store
+Thumbs.db
