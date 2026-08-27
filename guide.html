@@ -178,6 +178,10 @@
   .cat-title::before{content:"—— ";color:var(--gold-dim);font-weight:400;}
   .cat-sub{font-size:14px;color:var(--text-soft);margin-bottom:10px;}
 
+  /* 分类切换：默认只显示当前分类 */
+  .cat-view{display:none;}
+  .cat-view.active{display:block;}
+
   /* 区块内直接渲染的玩家文章 */
   .player-article{margin-top:24px;padding-top:22px;border-top:1px solid var(--border-soft);}
   .player-article:first-child{margin-top:10px;padding-top:0;border-top:none;}
@@ -238,64 +242,83 @@
     <aside class="col left">
       <p class="side-title">整合指南 · 目录</p>
       <ul class="side-list">
-        <li><a href="#"><span class="idx">1</span>Fallout 4 生存大修简介<span class="chev">&gt;</span></a></li>
-        <li><a href="#"><span class="idx">2</span>整合包更新计划<span class="chev">&gt;</span></a></li>
-        <li><a href="#"><span class="idx">3</span>安装与升级指南<span class="chev">&gt;</span></a></li>
-        <li><a href="#"><span class="idx">4</span>教程：如何从零开始<span class="chev">&gt;</span></a>
+        <li><a href="#" data-cat="1"><span class="idx">1</span>Fallout 4 生存大修简介<span class="chev">&gt;</span></a></li>
+        <li><a href="#" data-cat="2"><span class="idx">2</span>整合包更新计划<span class="chev">&gt;</span></a></li>
+        <li><a href="#" data-cat="3"><span class="idx">3</span>安装与升级指南<span class="chev">&gt;</span></a></li>
+        <li><a href="#" data-cat="4"><span class="idx">4</span>教程：如何从零开始<span class="chev">&gt;</span></a>
           <ul class="side-list">
-            <li><a class="sub" href="#">└ 手把手带你入门</a></li>
+            <li><a class="sub" href="#" data-cat="4">└ 手把手带你入门</a></li>
           </ul>
         </li>
-        <li><a href="#player-guides"><span class="idx">5</span>玩家上传攻略<span class="chev">&gt;</span></a></li>
-        <li><a href="#"><span class="idx">6</span>常见问题与修复<span class="chev">&gt;</span></a></li>
+        <li><a href="#" data-cat="5"><span class="idx">5</span>玩家上传攻略<span class="chev">&gt;</span></a></li>
+        <li><a href="#" data-cat="6"><span class="idx">6</span>常见问题与修复<span class="chev">&gt;</span></a></li>
       </ul>
       <a class="back-home" href="index.html"><span class="arr">←</span>返回首页</a>
     </aside>
 
-    <!-- Main article -->
+    <!-- Main content: categories switch based on sidebar selection -->
     <main class="content">
-      <article>
-        <p class="crumb"><b>⑩</b> 整合指南合集 / <b>Fallout 4 生存大修</b></p>
-        <div class="article-head">
-          <span class="idx">&gt;</span>
-          <h1 class="article-title">《Fallout 4》的终极形态</h1>
-        </div>
-        <div class="rule"></div>
 
-        <h2 class="sec" id="sec1">FO4SO.KNOWLEDGE</h2>
-        <p>欢迎来到 <span class="hl">FO4SO.KNOWLEDGE</span> —— 一份专注于 Fallout 4 生存大修的离线整合指南。我们把散落于各处的安装步骤、版本说明与游玩技巧，整理成一套清晰可检索的阅读体系。</p>
-        <div class="note">
-          <span class="tag">NOTE</span>
-          本指南基于当前主流的整合包构建方式整理，随内容演进不断修正与补齐。遇到加载失败或异常，请优先对照「常见问题与修复」章节。
-        </div>
-        <p>许多玩家第一次面对繁多的模组与依赖排序时，往往不知道该从哪一步开始。这份指南的意义，就是把这些碎片化的信息，收敛成一条可一步步照着走的主线。</p>
+      <!-- 分类 1：简介 -->
+      <section class="cat-view" data-cat="1">
+        <article>
+          <p class="crumb"><b>⑩</b> 整合指南合集 / <b>Fallout 4 生存大修</b></p>
+          <div class="article-head">
+            <span class="idx">&gt;</span>
+            <h1 class="article-title">《Fallout 4》的终极形态</h1>
+          </div>
+          <div class="rule"></div>
 
-        <h2 class="sec" id="sec2">为什么选择生存大修</h2>
-        <p>我们追求的，是一套更具挑战性、更贴近真实废土体验的玩法：资源的稀缺、伤害的真实、机制的克制，让每一次决策都有分量。</p>
-        <div class="note">
-          <span class="tag">NOTE</span>
-          整合包持续维护与更新，并广泛收集玩家的合理意见。若你有改进建议，欢迎在交流群中反馈：748570653。
-        </div>
-        <p>这套体系并非一蹴而就，而是经过多次版本迭代慢慢打磨而成。每一个模块，都对应一段真实的游玩体会。</p>
-      </article>
+          <h2 class="sec" id="sec1">FO4SO.KNOWLEDGE</h2>
+          <p>欢迎来到 <span class="hl">FO4SO.KNOWLEDGE</span> —— 一份专注于 Fallout 4 生存大修的离线整合指南。我们把散落于各处的安装步骤、版本说明与游玩技巧，整理成一套清晰可检索的阅读体系。</p>
+          <div class="note"><span class="tag">NOTE</span>本指南基于当前主流的整合包构建方式整理，随内容演进不断修正与补齐。遇到加载失败或异常，请优先对照「常见问题与修复」章节。</div>
+          <p>许多玩家第一次面对繁多的模组与依赖排序时，往往不知道该从哪一步开始。这份指南的意义，就是把这些碎片化的信息，收敛成一条可一步步照着走的主线。</p>
 
-      <!-- 玩家上传攻略：同页独立分类区块 -->
-      <section class="cat-block" id="player-guides">
-        <h2 class="cat-title">玩家上传攻略</h2>
-        <p class="cat-sub">这里展示玩家上传、并已整理发布的攻略。点击标题即可阅读；你也可以把自己的攻略发布上来。</p>
+          <h2 class="sec" id="sec2">为什么选择生存大修</h2>
+          <p>我们追求的，是一套更具挑战性、更贴近真实废土体验的玩法：资源的稀缺、伤害的真实、机制的克制，让每一次决策都有分量。</p>
+          <div class="note"><span class="tag">NOTE</span>整合包持续维护与更新，并广泛收集玩家的合理意见。若你有改进建议，欢迎在交流群中反馈：748570653。</div>
+          <p>这套体系并非一蹴而就，而是经过多次版本迭代慢慢打磨而成。每一个模块，都对应一段真实的游玩体会。</p>
+        </article>
+      </section>
+
+      <!-- 分类 2：整合包更新计划 -->
+      <section class="cat-view" data-cat="2">
+        <h2 class="cat-title" id="cat2">整合包更新计划</h2>
+        <p class="cat-sub">该分类内容正在整理中，敬请期待。</p>
+      </section>
+
+      <!-- 分类 3：安装与升级指南 -->
+      <section class="cat-view" data-cat="3">
+        <h2 class="cat-title" id="cat3">安装与升级指南</h2>
+        <p class="cat-sub">该分类内容正在整理中，敬请期待。</p>
+      </section>
+
+      <!-- 分类 4：教程：如何从零开始 -->
+      <section class="cat-view" data-cat="4">
+        <h2 class="cat-title" id="cat4">教程：如何从零开始</h2>
+        <p class="cat-sub">该分类内容正在整理中，敬请期待。</p>
+      </section>
+
+      <!-- 分类 5：玩家上传攻略 -->
+      <section class="cat-view" data-cat="5">
+        <h2 class="cat-title" id="player-guides">玩家上传攻略</h2>
+        <p class="cat-sub">这里展示玩家上传、并已整理发布的攻略。</p>
         <div id="playerGuideList"></div>
         <a class="upload-btn" href="submit.html">投稿你的攻略</a>
       </section>
+
+      <!-- 分类 6：常见问题与修复 -->
+      <section class="cat-view" data-cat="6">
+        <h2 class="cat-title" id="cat6">常见问题与修复</h2>
+        <p class="cat-sub">该分类内容正在整理中，敬请期待。</p>
+      </section>
+
     </main>
 
     <!-- Right sidebar -->
     <aside class="col right">
       <p class="side-title">页面导航</p>
-      <div class="toc">
-        <a href="#sec1">—— FO4SO.KNOWLEDGE</a>
-        <a class="l2" href="#sec2">为什么选择生存大修</a>
-        <a href="#player-guides">玩家上传攻略</a>
-      </div>
+      <div class="toc" id="pageToc"></div>
       <p class="meta-label">反馈者</p>
       <div class="toc">
         <a href="#">社区成员</a>
@@ -345,6 +368,29 @@
         copyText(location.href).then(function(ok){ showToast(ok?'链接已复制':'复制失败，请手动复制'); });
       });
     }
+
+    // ===== 分类切换：侧边栏选择决定中间内容（各分类互斥，不堆叠） =====
+    function showCat(n){
+      n = String(n);
+      document.querySelectorAll('.cat-view').forEach(function(v){ v.classList.toggle('active', v.getAttribute('data-cat')===n); });
+      document.querySelectorAll('.side-list a[data-cat]').forEach(function(a){ a.classList.toggle('active', a.getAttribute('data-cat')===n); });
+      buildToc(n);
+    }
+    function buildToc(n){
+      var view=document.querySelector('.cat-view[data-cat="'+n+'"]');
+      var toc=document.getElementById('pageToc');
+      if(!view||!toc) return;
+      toc.innerHTML='';
+      view.querySelectorAll('h2.sec[id], h3.sec[id], h2.cat-title[id], h3[id]').forEach(function(h){
+        var a=document.createElement('a'); a.href='#'+h.id; a.textContent=h.textContent.trim();
+        if(h.tagName==='H3') a.className='l2';
+        toc.appendChild(a);
+      });
+    }
+    document.querySelectorAll('.side-list a[data-cat]').forEach(function(a){
+      a.addEventListener('click',function(e){ e.preventDefault(); showCat(a.getAttribute('data-cat')); });
+    });
+    showCat(1);
   </script>
   <script>
     // ===== 玩家上传攻略：独立区块，直接渲染每篇文章的标题+正文+落款 =====
