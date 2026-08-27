@@ -20,3 +20,4 @@ Thumbs.db
 # 本地机密/状态（勿入库）
 .dev.vars
 .wrangler/
+issue-to-article.html
