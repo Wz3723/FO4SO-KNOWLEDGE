@@ -172,6 +172,12 @@
   .upload-btn{display:inline-flex;align-items:center;gap:8px;margin-top:18px;padding:12px 20px;border:1px solid var(--gold-dim);border-radius:6px;color:var(--gold-strong);font-size:14px;font-weight:700;transition:background .15s,transform .12s;}
   .upload-btn:hover{background:rgba(227,176,75,.10);transform:translateY(-2px);}
 
+  /* 独立分类区块（玩家上传攻略） */
+  .cat-block{margin-top:34px;padding:26px 28px;background:var(--panel);border:1px solid var(--border);border-radius:14px;}
+  .cat-title{font-size:22px;font-weight:800;color:var(--gold);margin-bottom:6px;}
+  .cat-title::before{content:"—— ";color:var(--gold-dim);font-weight:400;}
+  .cat-sub{font-size:14px;color:var(--text-soft);margin-bottom:10px;}
+
   @media (max-width:980px){
     .layout{grid-template-columns:200px 1fr;}
     .right{display:none;}
@@ -255,12 +261,15 @@
           整合包持续维护与更新，并广泛收集玩家的合理意见。若你有改进建议，欢迎在交流群中反馈：748570653。
         </div>
         <p>这套体系并非一蹴而就，而是经过多次版本迭代慢慢打磨而成。每一个模块，都对应一段真实的游玩体会。</p>
+      </article>
 
-        <h2 class="sec" id="player-guides">玩家上传攻略</h2>
-        <p>这里展示玩家上传、并已整理发布的攻略。点击标题即可阅读；你也可以把自己的攻略发布上来。</p>
+      <!-- 玩家上传攻略：同页独立分类区块 -->
+      <section class="cat-block" id="player-guides">
+        <h2 class="cat-title">玩家上传攻略</h2>
+        <p class="cat-sub">这里展示玩家上传、并已整理发布的攻略。点击标题即可阅读；你也可以把自己的攻略发布上来。</p>
         <div id="playerGuideList"></div>
         <a class="upload-btn" href="submit.html">投稿你的攻略</a>
-      </article>
+      </section>
     </main>
 
     <!-- Right sidebar -->
@@ -333,7 +342,7 @@
         .then(function(r){ if(!r.ok) throw new Error('none'); return r.json(); })
         .then(function(files){
           var arr=(files||[]).filter(function(f){ return /\.html$/i.test(f.name); });
-          if(!arr.length){ list.innerHTML='<div class="guide-empty">还没有上传的攻略。用“投稿你的攻略”发布后，再用“Issue 转文章”转换并放入 articles/ 即可显示。</div>'; return; }
+          if(!arr.length){ list.innerHTML=''; return; }
           Promise.all(arr.map(function(f){
             return fetch(f.download_url).then(function(r){ return r.text(); }).then(function(html){
               var t=(html.match(/<title>([\s\S]*?)<\/title>/i)||[])[1]||f.name;
@@ -350,7 +359,7 @@
             });
           }).catch(function(){ list.innerHTML='<div class="guide-empty">读取失败，请稍后刷新。</div>'; });
         })
-        .catch(function(){ list.innerHTML='<div class="guide-empty">还没有上传的攻略。用“投稿你的攻略”发布后，再用“Issue 转文章”转换并放入 articles/ 即可显示。</div>'; });
+        .catch(function(){ list.innerHTML=''; });
     })();
   </script>
   <script src="search.js"></script>
