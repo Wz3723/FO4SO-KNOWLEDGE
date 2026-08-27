@@ -21,3 +21,5 @@ Thumbs.db
 .dev.vars
 .wrangler/
 issue-to-article.html
+server.js
+启动站长工具.bat
