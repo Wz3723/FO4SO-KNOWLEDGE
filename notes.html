@@ -85,36 +85,48 @@
   <main class="wrap">
     <h1 class="page-title">笔记</h1>
     <p class="page-sub">站长的随笔、开发心得与更新唠叨。之后会陆续补。</p>
-    <div id="notesList"></div>
+    <div id="notesList"><div class="note-empty">加载中…</div></div>
   </main>
 
   <footer>
-    <p class="mono">FO4SO_KNOWLEDGE // VERSION：1.5.6</p>
+    <p class="mono">FO4SO.KNOWLEDGE // VERSION：1.5.6</p>
     <p>用 <a href="#">WZ</a> 构建 · 主题灵感来自终端美学</p>
   </footer>
 
   <script src="lib/marked.min.js"></script>
   <script>
-    // 站长笔记：往下面数组加 {title, date, body} 即可（body 支持 Markdown）
-    var NOTES = [
-      { title:'欢迎来到 FO4SO.KNOWLEDGE', date:'2026-08-27',
-        body:'这里是站长的笔记区，放一些随笔、开发心得与更新唠叨。\n\n示例：支持 **加粗**、- 列表、#### 小标题、> 引用、`代码` 等 Markdown。\n\n> 这是一条示例笔记，你可删除或替换为真实内容。' }
-    ];
-
+    // 读取仓库 notes/ 文件夹里的 .md 笔记（front-matter 存 title/date，正文 markdown）
     (function(){
       var box=document.getElementById('notesList');
-      if(!box) return;
-      if(!NOTES || !NOTES.length){ box.innerHTML='<div class="note-empty">还没有笔记，站长会陆续写。</div>'; return; }
-      if (window.marked) marked.setOptions({ breaks:true, gfm:true });
-      box.innerHTML='';
-      NOTES.forEach(function(n){
-        var el=document.createElement('article'); el.className='note';
-        var head='<div class="head"><div class="t">'+esc(n.title)+'</div>'+(n.date?'<div class="d">'+esc(n.date)+'</div>':'')+'</div>';
-        var body='<div class="body">'+(window.marked?marked.parse(n.body||''):'<p>'+esc(n.body||'')+'</p>')+'</div>';
-        el.innerHTML=head+body;
-        box.appendChild(el);
-      });
+      var OWNER='wz3723', REPO='FO4SO-KNOWLEDGE';
       function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+      if (window.marked) marked.setOptions({ breaks:true, gfm:true });
+      fetch('https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/notes')
+        .then(function(r){ if(r.status===404) throw new Error('empty'); if(!r.ok) throw new Error('err'); return r.json(); })
+        .then(function(files){
+          var arr=(files||[]).filter(function(f){ return /\.md$/i.test(f.name); });
+          if(!arr.length){ box.innerHTML='<div class="note-empty">还没有笔记，站长会陆续写。</div>'; return; }
+          return Promise.all(arr.map(function(f){
+            return fetch(f.download_url).then(function(r){ return r.text(); }).then(function(text){
+              var fm=text.match(/^---\s*\n([\s\S]*?)\n---/);
+              var meta=fm?fm[1]:'', body=fm?text.slice(fm[0].length):text;
+              var title=((meta.match(/^title:\s*(.+)/m)||[])[1]||'').trim()||f.name;
+              var date=((meta.match(/^date:\s*(.+)/m)||[])[1]||'').trim();
+              return { title:title, date:date, body:body.trim() };
+            });
+          }));
+        })
+        .then(function(notes){
+          var order=notes.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+          box.innerHTML='';
+          order.forEach(function(n){
+            var el=document.createElement('article'); el.className='note';
+            el.innerHTML='<div class="head"><div class="t">'+esc(n.title)+'</div>'+(n.date?'<div class="d">'+esc(n.date)+'</div>':'')+'</div>'+
+              '<div class="body">'+(window.marked?marked.parse(n.body):'<p>'+esc(n.body)+'</p>')+'</div>';
+            box.appendChild(el);
+          });
+        })
+        .catch(function(e){ box.innerHTML='<div class="note-empty">'+(e&&e.message==='empty'?'还没有笔记，站长会陆续写。':'读取失败，请稍后刷新。')+'</div>'; });
     })();
 
     // 分享此页：复制链接
