@@ -18,7 +18,7 @@
     --border:#26262a;--border-soft:#1d1d20;
     --gold:#e3b04b;--gold-strong:#f2c76b;--gold-dim:#a8873f;
     --crimson:#8e2a26;--crimson-hover:#a63530;--teal:#6fbfa5;
-    --text:#d8ccae;--text-soft:#ab9f83;--text-muted:#7d7460;
+    --text:#e6dfd0;--text-soft:#c4b79a;--text-muted:#a59c85;
     --mono:'JetBrains Mono','Fira Code','Cascadia Code',Consolas,'SF Mono',monospace;
     --sans:'PingFang SC','Microsoft YaHei','Noto Sans SC',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   }
@@ -168,7 +168,7 @@
     -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
   }
   h2.sec::before{content:"—— ";color:var(--gold-dim);font-weight:400;-webkit-text-fill-color:var(--gold-dim);}
-  article p{font-size:15px;color:var(--text-soft);margin:14px 0;line-height:1.8;}
+  article p{font-size:16px;color:var(--text-soft);margin:14px 0;line-height:1.8;}
   .hl{background:linear-gradient(180deg,#f7d077,#d9a036);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;font-weight:700;text-shadow:0 0 14px rgba(227,176,75,.28);}
   article p strong, article p b, .cat-view p strong, .cat-view p b{color:var(--gold-strong);font-weight:700;}
   .note{
@@ -196,7 +196,7 @@
   .cat-sub{font-size:14px;color:var(--text-soft);margin-bottom:10px;}
   .cat-view h3{display:flex;align-items:center;gap:9px;color:var(--gold);font-size:18px;font-weight:800;margin:26px 0 12px;line-height:1.35;}
   .cat-view h3::before{content:"";width:4px;height:18px;border-radius:2px;background:linear-gradient(180deg,var(--gold-strong),var(--gold-dim));flex:none;}
-  .cat-view p{color:var(--text-soft);font-size:15px;margin:12px 0;line-height:1.8;}
+  .cat-view p{color:var(--text-soft);font-size:16px;margin:12px 0;line-height:1.8;}
 
   /* 分类横幅（灰白/琥珀金/烫金） */
   .cat-banner{display:flex;align-items:center;gap:16px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:20px 22px;margin-bottom:24px;}
@@ -227,7 +227,9 @@
   article p code,.cat-view p code{font-family:var(--mono);background:var(--bg-soft);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:#e5d9b5;font-size:13px;}
 
   /* 方案C：复古CRT */
-  .content{position:relative;}
+  .content{position:relative;background:
+    radial-gradient(60% 55% at 50% 0%,rgba(227,176,75,.07),transparent 70%),
+    radial-gradient(45% 45% at 90% 100%,rgba(227,176,75,.05),transparent 70%);}
   .content::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
     background:repeating-linear-gradient(180deg,rgba(0,0,0,.05) 0 1px,transparent 1px 3px);opacity:.7;}
   .side-head .t::after{content:"▌";color:var(--gold-strong);animation:blink 1.1s steps(1) infinite;margin-left:2px;}
