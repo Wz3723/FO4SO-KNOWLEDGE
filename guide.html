@@ -460,7 +460,15 @@
     document.querySelectorAll('.side-list a[data-cat]').forEach(function(a){
       a.addEventListener('click',function(e){ e.preventDefault(); showCat(a.getAttribute('data-cat')); });
     });
-    showCat(1);
+    // 支持 URL hash 定位分类（如 #player-guides → 切到玩家上传攻略）
+    function catFromHash(){
+      var h=location.hash.replace('#','');
+      if(!h) return '1';
+      var views=document.querySelectorAll('.cat-view');
+      for(var i=0;i<views.length;i++){ if(views[i].querySelector('[id="'+h+'"]')) return views[i].getAttribute('data-cat'); }
+      return '1';
+    }
+    showCat(catFromHash());
   </script>
   <script>
     // ===== 玩家上传攻略：表格列表 + 本页内联查看文章（不跳转） =====
