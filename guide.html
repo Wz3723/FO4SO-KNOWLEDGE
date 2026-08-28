@@ -202,6 +202,10 @@
   .cat-view h3{display:flex;align-items:center;gap:9px;color:var(--gold);font-size:19px;font-weight:800;margin:26px 0 12px;line-height:1.35;}
   .cat-view h3::before{content:"";width:4px;height:18px;border-radius:2px;background:linear-gradient(180deg,var(--gold-strong),var(--gold-dim));flex:none;}
   .cat-view p{font-family:var(--prose);color:var(--text-soft);font-size:16px;margin:12px 0 15px;line-height:1.95;text-shadow:-1.5px -1.5px 0 rgba(255,248,230,.16), 2px 2px 2px rgba(0,0,0,.7), 0 0 18px rgba(245,208,125,.3);}
+  .cat-view ul,.cat-view ol{padding-left:24px;margin:12px 0;}
+  .cat-view li{margin:9px 0;line-height:1.75;}
+  .cat-view .mono{font-family:var(--mono);color:var(--gold-strong);font-size:14px;}
+  .cat-view h3 b{color:var(--gold-strong);}
 
   /* 分类横幅（灰白/琥珀金/烫金） */
   .cat-banner{display:flex;align-items:center;gap:16px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:20px 22px;margin-bottom:24px;}
@@ -407,12 +411,16 @@
         </div>
         <div><span class="chip"><span class="dot"></span>当前 1.5.6</span><span class="chip"><span class="dot"></span>持续维护</span></div>
         <h3>当前版本</h3>
-        <p>（待补充：当前整合包版本号、发布时间与核心改动。）</p>
+        <p>当前版本 <b>v1.5.6</b>，发布于 <span class="hl">2026-08</span>。核心改动：<span class="hl">写出本版本新增 / 修复了什么</span>。</p>
         <h3>更新日志</h3>
-        <p>（待补充：按版本记录的改动，例如某版本新增 / 修复了哪些。）</p>
+        <ul>
+          <li><b>v1.5.6</b> <span class="mono">2026-08</span>：新增 <span class="hl">系统内容</span>；修复 <span class="hl">问题点</span>。</li>
+          <li><b>v1.5.5</b> <span class="mono">2026-07</span>：平衡调整 <span class="hl">…</span>；改善 <span class="hl">…</span>。</li>
+          <li><b>v1.5.4</b> <span class="mono">2026-06</span>：修复启动崩溃。</li>
+        </ul>
         <div class="note tip"><span class="tag">TIP</span>建议每次更新前先备份存档，升级后若异常可先还原。</div>
         <h3>下一步计划</h3>
-        <p>（待补充：计划中的更新方向、待优化项。）</p>
+        <p>正在 <span class="hl">测试 / 开发</span>：计划加入 <span class="hl">XX 系统</span>、优化 <span class="hl">XX</span>。如你有建议，欢迎在群 <b>748570653</b> 反馈。</p>
       </section>
 
       <!-- 分类 3：安装与升级指南 -->
@@ -426,14 +434,23 @@
         </div>
         <div><span class="chip"><span class="dot"></span>图文步骤</span><span class="chip"><span class="dot"></span>含排错</span></div>
         <h3>环境要求（前置）</h3>
-        <p>（待补充：系统 / 硬件 / 依赖要求。）</p>
+        <ul>
+          <li>系统：<span class="hl">Windows 10/11 64 位（示例）</span></li>
+          <li>硬件：<span class="hl">内存 16GB 以上；SSD 预留空间</span></li>
+          <li>依赖：<span class="hl">运行库 / 前置组件</span></li>
+        </ul>
         <h3>下载与安装步骤</h3>
-        <p>（待补充：下载、解压、安装的具体步骤。）</p>
+        <ol>
+          <li><span class="hl">从指定地址下载整合包压缩包</span>（校验大小，避免损坏）。</li>
+          <li>解压到 <span class="hl">不含中文、无空格</span> 的路径，如 <span class="mono">D:\Games\FO4</span>。</li>
+          <li>运行 <span class="mono">启动器.exe</span> → 选择游戏目录 → 一键部署。</li>
+          <li>首次启动稍慢，等待资源加载完成。</li>
+        </ol>
         <div class="note warn"><span class="tag">WARN</span>安装前务必关闭无关进程并预留磁盘空间，避免中断导致损坏。</div>
         <h3>升级到新版本</h3>
-        <p>（待补充：覆盖 / 挪档 / 注意事项。）</p>
+        <p>先<span class="hl">备份存档</span>，再用新版本覆盖安装；部分大版本建议<span class="hl">干净重装</span>。如异常，参考「常见问题与修复」。</p>
         <h3>常见启动问题</h3>
-        <p>（待补充：启动失败的处理。）</p>
+        <p>启动失败 → 先看「常见问题与修复」；仍无法解决，拍下报错截图到群 <b>748570653</b> 求助。</p>
       </section>
 
       <!-- 分类 4：教程：如何从零开始 -->
@@ -447,14 +464,18 @@
         </div>
         <div><span class="chip"><span class="dot"></span>零门槛</span><span class="chip"><span class="dot"></span>纯游玩向</span></div>
         <h3>开局须知</h3>
-        <p>（待补充。）</p>
+        <p><span class="hl">开局前你要知道的</span>：如难度选择、流派定位、资源稀缺感等。先理解这套玩法的「克制」基调，再开始。</p>
         <h3>上手引导</h3>
-        <p>（待补充。）</p>
+        <p><span class="hl">上手第一步该做什么</span>：熟悉界面、基础操作、背包与任务引导。</p>
         <div class="note info"><span class="tag">INFO</span>不同玩法流派侧重点不同，先按推荐玩法入门，再自行调配。</div>
         <h3>核心玩法</h3>
-        <p>（待补充。）</p>
+        <p><span class="hl">本作的核心机制</span>：资源、伤害、敌人、据点等核心循环。</p>
         <h3>生存技巧</h3>
-        <p>（待补充。）</p>
+        <ul>
+          <li><span class="hl">技巧一：…</span></li>
+          <li><span class="hl">技巧二：…</span></li>
+          <li><span class="hl">技巧三：…</span></li>
+        </ul>
       </section>
 
       <!-- 分类 5：玩家上传攻略 -->
@@ -505,12 +526,16 @@
         </div>
         <div><span class="chip"><span class="dot"></span>逐步排查</span><span class="chip"><span class="dot"></span>可联系群 748570653</span></div>
         <h3>常见问题</h3>
-        <p>（待补充。）</p>
+        <ul>
+          <li><b>Q：启动即崩溃 / 闪退？</b><br/><span class="hl">答：…（原因与处理）</span></li>
+          <li><b>Q：加载卡死 / 黑屏？</b><br/><span class="hl">答：…</span></li>
+          <li><b>Q：模组未生效 / 排序错误？</b><br/><span class="hl">答：…</span></li>
+        </ul>
         <h3>故障排除</h3>
-        <p>（待补充。）</p>
+        <p>按<span class="hl">「由简到难」</span>排查：重启 → 关掉无关进程 → 检查路径/权限 → 重装缓存 → 干净重装。定位到具体报错再处理。</p>
         <div class="note warn"><span class="tag">WARN</span>修改或删档前请先备份，避免不可逆损失。</div>
         <h3>兜底建议</h3>
-        <p>（待补充：重置 / 还原 / 联系交流群 748570653。）</p>
+        <p>仍无法解决：重置配置 → 还原备份 → 联系交流群 <b>748570653</b>（附报错截图与配置信息）。</p>
       </section>
 
     </main>
