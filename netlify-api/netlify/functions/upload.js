@@ -43,5 +43,5 @@ exports.handler = async (event) => {
     const t = await gh.text();
     return j({ error: 'github write failed: ' + t.slice(0, 140) }, 502);
   }
-  return j({ url: 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/main/' + key }, 200);
+  return j({ url: 'https://fo4so.asia/' + key }, 200);
 };
