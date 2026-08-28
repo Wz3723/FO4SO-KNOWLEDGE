@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://wz3723.github.io/FO4SO-KNOWLEDGE/sitemap.xml
+Sitemap: https://fo4so.asia/sitemap.xml
