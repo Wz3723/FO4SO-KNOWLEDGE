@@ -663,7 +663,7 @@
       fetch('https://raw.githubusercontent.com/'+OWNER+'/'+REPO+'/main/articles-manifest.json')
         .then(function(r){ if(!r.ok) throw new Error('none'); return r.json(); })
         .then(function(data){
-          var names=(data.files||[]).filter(function(n){ return /\/articles\//.test(n) && /\.html$/i.test(n); });
+          var names=(data.files||[]).filter(function(n){ return /\/?articles\//.test(n) && /\.html$/i.test(n); });
           return Promise.all(names.map(function(name){
             var path=name.replace(/^\/+/,'');
             return fetch('https://raw.githubusercontent.com/'+OWNER+'/'+REPO+'/main/'+path).then(function(r){ return r.text(); }).then(function(html){
