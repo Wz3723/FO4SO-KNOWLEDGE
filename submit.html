@@ -136,9 +136,9 @@
     <div class="howto">
       <h3>投稿说明</h3>
       <ul>
-        <li>点「提交投稿」→ 新标签打开 GitHub 新建 Issue（内容已填好）→ 点「Submit new issue」确认，投稿即变成仓库里的一个 Issue。</li>
-        <li>没有 GitHub / 打不开 GitHub：点「复制全部内容」，把内容粘贴发给我（QQ/邮箱），我帮你发布。</li>
-        <li>站主会审阅；通过后再手动发布到网站。</li>
+        <li>点「提交投稿」→ 投稿自动生成仓库里的一个 Issue，站长审核通过后自动发布到网站（无需你登录 GitHub）。</li>
+        <li>提交失败时：点「复制全部内容」，把内容粘贴发给我（QQ/邮箱），我帮你发布。</li>
+        <li>站长审阅后打上「已审核」标签，文章会自动出现在「玩家上传攻略」。</li>
       </ul>
     </div>
   </main>
@@ -177,11 +177,18 @@
             b=body.value.trim();
         if(!title){ set('请填写标题', false); return; }
         if(!b){ set('请填写内容', false); return; }
-        var issueBody = '**作者**：' + (author||'匿名') + '\n**联系方式**：' + (contact||'未填写') + '\n\n---\n\n' + b;
-        var url = 'https://github.com/' + OWNER + '/' + REPO + '/issues/new?title=' +
-          encodeURIComponent(title) + '&body=' + encodeURIComponent(issueBody);
-        window.open(url, '_blank');
-        set('已在 GitHub 打开新 Issue，点「Submit new issue」即完成投稿', true);
+        set('提交中…', true);
+        fetch('https://deluxe-meerkat-b85824.netlify.app/.netlify/functions/submit', {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json' },
+          body: JSON.stringify({ title: title, author: author, contact: contact, content: b })
+        })
+          .then(function(r){ if(!r.ok){ return r.json().then(function(d){ throw new Error(d.error||('提交失败('+r.status+')')); }); } return r.json(); })
+          .then(function(d){
+            set('已提交投稿（Issue #'+d.number+'），审核通过后自动发布', true);
+            if(d.url) window.open(d.url, '_blank');
+          })
+          .catch(function(e){ set('提交失败：'+(e.message||e)+'（可点「复制全部内容」手动发给站主）', false); });
       });
 
       copyBtn.addEventListener('click', function(){
