@@ -197,7 +197,7 @@
 
       // 图片上传：选图 → 传 R2 → 在光标处插入 ![img](url)
       var uploadBtn=document.getElementById('uploadBtn'), imgFile=document.getElementById('imgFile'),
-          upMsg=document.getElementById('upMsg'), API='https://api.fo4so.asia/upload';
+          upMsg=document.getElementById('upMsg'), API='https://deluxe-meerkat-b85824.netlify.app/.netlify/functions/upload';
       function upSet(m, ok){ upMsg.textContent=m||''; upMsg.className='up-msg '+(ok?'ok':'err'); }
       function insertAtCursor(ta, text){
         if(typeof ta.selectionStart==='number' && typeof ta.selectionEnd==='number'){
