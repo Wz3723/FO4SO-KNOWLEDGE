@@ -101,25 +101,27 @@ exports.handler = async (event) => {
 
     // 2) 已发布：articles/ 里的文件名（<n>-<slug>.html）
     const artRes = await fetch(gh + '/contents/articles', { headers: auth });
-    let existing = [];        // [{name, path}]
+    let existing = [];        // [{name, path, sha}]
     let publishedPaths = new Set();
+    const shaByPath = {};
     if (artRes.ok) {
       const files = await artRes.json();
       if (Array.isArray(files)) {
-        existing = files.map(f => ({ name: f.name, path: f.path || ('articles/' + f.name) }));
-        existing.forEach(x => publishedPaths.add(x.path));
+        existing = files.map(f => ({ name: f.name, path: f.path || ('articles/' + f.name), sha: f.sha }));
+        existing.forEach(x => { publishedPaths.add(x.path); if (x.sha) shaByPath[x.path] = x.sha; });
       }
     }
     const publishedNums = new Set();
     existing.forEach(x => { const m = x.name.match(/^(\d+)-/); if (m) publishedNums.add(m[1]); });
 
     let published = 0, skipped = 0, errors = [];
+    const force = (event.queryStringParameters || {}).force === '1';
     const PENDING = [];
     const seen = new Set();
     for (const it of issues) {
       if (it.pull_request) continue;
       const n = String(it.number);
-      if (publishedNums.has(n)) { skipped++; continue; }
+      if (!force && publishedNums.has(n)) { skipped++; continue; }
       seen.add(n); PENDING.push(it);
     }
     // 若 webhook 带了具体 Issue 号，直接再取该 Issue，避免加标签后查询延迟漏掉
@@ -144,10 +146,12 @@ exports.handler = async (event) => {
       const words = (content.replace(/<[^>]+>/g,'').trim().length);
       const html = buildArticlePage(title || ('投稿 '+n), author || '匿名', date, bodyHtml, words);
       const path = 'articles/' + n + '-' + slugify(title || 'article') + '.html';
+      const putPayload = { message: '发布投稿 #' + n + ' ' + (title||''), content: Buffer.from(html).toString('base64'), branch: 'main' };
+      if (shaByPath[path]) putPayload.sha = shaByPath[path];   // 覆盖已有文件需带 sha
       const put = await fetch(gh + '/contents/' + path, {
         method: 'PUT',
         headers: Object.assign({ 'Content-Type':'application/json' }, auth),
-        body: JSON.stringify({ message: '发布投稿 #' + n + ' ' + (title||''), content: Buffer.from(html).toString('base64'), branch: 'main' })
+        body: JSON.stringify(putPayload)
       });
       if (!put.ok) { const e = await put.text(); errors.push('#'+n+': '+e.slice(0,120)); continue; }
       published++;
