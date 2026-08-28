@@ -1,0 +1,8 @@
+name = "fo4so-api"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# R2 图片存储绑定（bucket 需在 Cloudflare 控制台创建：fo4so-images）
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "fo4so-images"

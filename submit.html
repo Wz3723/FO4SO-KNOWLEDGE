@@ -57,6 +57,10 @@
   .preview-empty{color:var(--text-muted);}
 
   .actions{display:flex;align-items:center;gap:16px;margin-top:4px;flex-wrap:wrap;}
+  .upload-bar{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap;}
+  .up-msg{font-size:13px;color:var(--text-muted);}
+  .up-msg.ok{color:var(--teal);}
+  .up-msg.err{color:var(--crimson-hover);}
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;font-size:15px;font-weight:700;border-radius:5px;cursor:pointer;border:1px solid var(--gold-dim);color:var(--gold-strong);background:transparent;transition:background .18s,border-color .18s,transform .12s;}
   .btn:hover{background:rgba(227,176,75,.10);border-color:var(--gold);}
   .btn.primary{background:var(--crimson);border-color:var(--crimson);color:#f5e6d8;}
@@ -109,7 +113,12 @@
       <div class="field">
         <label>内容 <b>*</b>（支持 Markdown，右侧实时预览）</label>
         <textarea id="body" placeholder="正文…&#10;&#10;支持：段落、**加粗**、列表、标题等 Markdown 文本排版"></textarea>
-        <div class="tip">排版好的短文/攻略最容易通过；纯文本 Markdown 排版即可，右侧可实时预览。</div>
+        <div class="upload-bar">
+          <button type="button" class="btn ghost" id="uploadBtn">上传图片</button>
+          <input type="file" id="imgFile" accept="image/*" hidden />
+          <span id="upMsg" class="up-msg"></span>
+        </div>
+        <div class="tip">排版好的短文/攻略最容易通过；纯文本 Markdown 排版即可，右侧可实时预览。图片点「上传图片」自动转成图片链接插入正文。</div>
       </div>
 
       <div class="preview-wrap">
@@ -184,6 +193,37 @@
         if(!b){ set('请先填写内容', false); return; }
         var text = '**作者**：' + (author||'匿名') + '\n**联系方式**：' + (contact||'未填写') + '\n\n---\n\n' + b;
         copyText(text).then(function(ok){ set(ok?'已复制全部内容，请粘贴发给站主':'复制失败，请手动复制', ok); });
+      });
+
+      // 图片上传：选图 → 传 R2 → 在光标处插入 ![img](url)
+      var uploadBtn=document.getElementById('uploadBtn'), imgFile=document.getElementById('imgFile'),
+          upMsg=document.getElementById('upMsg'), API='https://api.fo4so.asia/upload';
+      function upSet(m, ok){ upMsg.textContent=m||''; upMsg.className='up-msg '+(ok?'ok':'err'); }
+      function insertAtCursor(ta, text){
+        if(typeof ta.selectionStart==='number' && typeof ta.selectionEnd==='number'){
+          var s=ta.selectionStart, e=ta.selectionEnd;
+          ta.value = ta.value.slice(0,s) + text + ta.value.slice(e);
+          ta.selectionStart = ta.selectionEnd = s + text.length;
+        } else { ta.value += text; }
+        ta.focus();
+      }
+      if(uploadBtn) uploadBtn.addEventListener('click', function(){ imgFile.click(); });
+      if(imgFile) imgFile.addEventListener('change', function(){
+        var f=imgFile.files && imgFile.files[0];
+        if(!f) return;
+        if(!(f.type||'').startsWith('image/')){ upSet('请选择图片文件', false); return; }
+        if(f.size > 10*1024*1024){ upSet('图片过大（限 10MB）', false); return; }
+        var fd=new FormData(); fd.append('file', f);
+        upSet('上传中…', true);
+        fetch(API, { method:'POST', body: fd })
+          .then(function(r){ if(!r.ok){ return r.json().then(function(d){ throw new Error(d.error||('上传失败('+r.status+')')); }); } return r.json(); })
+          .then(function(d){
+            insertAtCursor(body, '![图片]('+d.url+')');
+            renderPreview();
+            upSet('已上传并插入图片', true);
+          })
+          .catch(function(e){ upSet('上传失败：'+(e.message||e), false); });
+        imgFile.value='';
       });
 
       function copyText(t){
