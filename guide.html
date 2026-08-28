@@ -666,7 +666,8 @@
           var names=(data.files||[]).filter(function(n){ return /\/?articles\//.test(n) && /\.html$/i.test(n); });
           return Promise.all(names.map(function(name){
             var path=name.replace(/^\/+/,'');
-            return fetch(path).then(function(r){ return r.text(); }).then(function(html){
+            return fetch(path).then(function(r){ if(!r.ok) return null; return r.text(); }).then(function(html){
+              if(!html) return null;
               var title=((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)||[])[1]||'').replace(/<[^>]+>/g,'').trim();
               var author=((html.match(/<meta name="author" content="([^"]*)"/i)||[])[1]||'')||'匿名';
               var date=((html.match(/<meta name="date" content="([^"]*)"/i)||[])[1]||'');
@@ -676,7 +677,7 @@
             });
           }));
         })
-        .then(function(list){ items=list; render(); })
+        .then(function(list){ items=(list||[]).filter(Boolean); render(); })
         .catch(function(){ items=[]; render(); });
 
       function render(){
