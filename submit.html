@@ -208,20 +208,48 @@
         ta.focus();
       }
       if(uploadBtn) uploadBtn.addEventListener('click', function(){ imgFile.click(); });
-      if(imgFile) imgFile.addEventListener('change', function(){
+      // 客户端压缩 + 限尺寸：长边最多 1600px，输出 WebP(保透明)/JPEG，压制后仍超 4MB 则拒绝
+      function compressImage(file, maxDim, quality){
+        return new Promise(function(resolve, reject){
+          var url=URL.createObjectURL(file), img=new Image();
+          img.onload=function(){
+            URL.revokeObjectURL(url);
+            var w=img.naturalWidth, h=img.naturalHeight;
+            var scale=Math.min(1, maxDim/Math.max(w,h));
+            var nw=Math.max(1,Math.round(w*scale)), nh=Math.max(1,Math.round(h*scale));
+            var canvas=document.createElement('canvas'); canvas.width=nw; canvas.height=nh;
+            canvas.getContext('2d').drawImage(img,0,0,nw,nh);
+            function tryEncode(type, q){
+              canvas.toBlob(function(blob){
+                if(blob) resolve(blob);
+                else if(type==='image/webp') tryEncode('image/jpeg', q);   // WebP 不支持时转 JPEG
+                else reject(new Error('图片编码失败'));
+              }, type, q);
+            }
+            tryEncode('image/webp', quality);
+          };
+          img.onerror=function(){ URL.revokeObjectURL(url); reject(new Error('图片读取失败')); };
+          img.src=url;
+        });
+      }
+      if(imgFile) imgFile.addEventListener('change', async function(){
         var f=imgFile.files && imgFile.files[0];
         if(!f) return;
         if(!(f.type||'').startsWith('image/')){ upSet('请选择图片文件', false); return; }
-        if(f.size > 10*1024*1024){ upSet('图片过大（限 10MB）', false); return; }
-        upSet('上传中…', true);
-        fetch(API, { method:'POST', headers:{ 'Content-Type': f.type || 'image/png' }, body: f })
-          .then(function(r){ if(!r.ok){ return r.json().then(function(d){ throw new Error(d.error||('上传失败('+r.status+')')); }); } return r.json(); })
-          .then(function(d){
-            insertAtCursor(body, '![图片]('+d.url+')');
-            renderPreview();
-            upSet('已上传并插入图片', true);
-          })
-          .catch(function(e){ upSet('上传失败：'+(e.message||e), false); });
+        if(f.size > 20*1024*1024){ upSet('原图过大（限 20MB，建议先用大图裁剪）', false); imgFile.value=''; return; }
+        upSet('压缩中…', true);
+        try{
+          var out = await compressImage(f, 1600, 0.8);
+          var mb=(out.size/1024/1024).toFixed(2);
+          if(out.size > 4*1024*1024){ upSet('图片过大（压缩后仍 >4MB，请用小图）', false); imgFile.value=''; return; }
+          upSet('上传中（'+mb+'MB）…', true);
+          var resp = await fetch(API, { method:'POST', headers:{ 'Content-Type': out.type||'image/webp' }, body: out });
+          if(!resp.ok){ var e=await resp.json().catch(function(){return{};}); throw new Error(e.error||('上传失败('+resp.status+')')); }
+          var d=await resp.json();
+          insertAtCursor(body, '![图片]('+d.url+')');
+          renderPreview();
+          upSet('已压缩('+mb+'MB)并插入图片', true);
+        }catch(err){ upSet('上传失败：'+(err.message||err), false); }
         imgFile.value='';
       });
 
