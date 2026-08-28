@@ -106,12 +106,26 @@ exports.handler = async (event) => {
 
     let published = 0, skipped = 0, errors = [];
     const PENDING = [];
+    const seen = new Set();
     for (const it of issues) {
       if (it.pull_request) continue;
       const n = String(it.number);
       if (publishedNums.has(n)) { skipped++; continue; }
-      PENDING.push(it);
+      seen.add(n); PENDING.push(it);
     }
+    // 若 webhook 带了具体 Issue 号，直接再取该 Issue，避免加标签后查询延迟漏掉
+    try {
+      const payload = JSON.parse(event.body || '{}');
+      const n = payload.issue && Number(payload.issue.number);
+      if (n && !seen.has(String(n)) && !publishedNums.has(String(n))) {
+        const one = await fetch(gh + '/issues/' + n, { headers: auth });
+        if (one.ok) {
+          const o = await one.json();
+          const hasLabel = (o.labels || []).some(l => l.name === label);
+          if (hasLabel) { skipped--; PENDING.push(o); seen.add(String(n)); }
+        }
+      }
+    } catch (e) { /* 忽略 webhook 解析错误 */ }
 
     for (const it of PENDING) {
       const n = String(it.number);
