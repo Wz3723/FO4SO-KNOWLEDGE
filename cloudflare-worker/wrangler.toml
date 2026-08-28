@@ -2,7 +2,8 @@ name = "fo4so-api"
 main = "worker.js"
 compatibility_date = "2025-01-01"
 
-# R2 图片存储绑定（bucket 需在 Cloudflare 控制台创建：fo4so-images）
-[[r2_buckets]]
-binding = "IMAGES"
-bucket_name = "fo4so-images"
+# 通过 wrangler 注入环境变量（不要写进 git）：
+#   wrangler secret put GITHUB_TOKEN   -> 你的 GitHub Token（仓库 Contents: 读写）
+#   wrangler secret put OWNER          -> wz3723
+#   wrangler secret put REPO           -> FO4SO-KNOWLEDGE
+# 或在 Cloudflare 控制台 Worker -> Settings -> Variables & Secrets 添加。

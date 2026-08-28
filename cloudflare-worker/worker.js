@@ -1,18 +1,16 @@
-// FO4SO API — 投稿图片上传（Cloudflare Worker + R2）
-// 部署到 api.fo4so.asia。R2 绑定名 IMAGES，bucket 名 fo4so-images。
-const ALLOW_ORIGIN = '*';
+// FO4SO API — 投稿图片上传（serverless + 写入 GitHub 仓库 images/）
+// 部署到免卡 serverless（Vercel 或 Cloudflare Workers）。
+// 需要配置环境变量/Secret：GITHUB_TOKEN（仓库 Contents: 读写）、OWNER、REPO
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Max-Age': '86400'
+};
 const EXT_OK = ['png','jpg','jpeg','gif','webp','bmp','avif'];
 
-function cors(h){
-  h = Object.assign(
-    {
-      'Access-Control-Allow-Origin': ALLOW_ORIGIN,
-      'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Max-Age': '86400'
-    }, h || {});
-  return h;
-}
+function json(o, status, extra){ return new Response(JSON.stringify(o), { status: status, headers: Object.assign({ 'Content-Type':'application/json' }, CORS, extra||{}) }); }
+function b64(buf){ const b = new Uint8Array(buf); let s=''; for(let i=0;i<b.length;i++) s += String.fromCharCode(b[i]); return btoa(s); }
 
 export default {
   async fetch(request, env) {
@@ -20,48 +18,48 @@ export default {
     const path = url.pathname;
     const method = request.method;
 
-    if (method === 'OPTIONS') return new Response(null, { status: 204, headers: cors() });
+    if (method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
 
     // 上传：POST /upload  (multipart/form-data, 字段名 file)
     if (method === 'POST' && path === '/upload') {
+      const token = env.GITHUB_TOKEN;
+      const owner = env.OWNER || 'wz3723';
+      const repo  = env.REPO  || 'FO4SO-KNOWLEDGE';
+      if (!token) return json({ error: 'server not configured (missing GITHUB_TOKEN)' }, 500);
       try {
         const form = await request.formData();
         const file = form.get('file');
-        if (!file || typeof file === 'string') {
-          return new Response(JSON.stringify({ error: 'no file' }), { status: 400, headers: cors({ 'Content-Type': 'application/json' }) });
-        }
-        if (!(file.type || '').startsWith('image/')) {
-          return new Response(JSON.stringify({ error: 'not an image' }), { status: 400, headers: cors({ 'Content-Type': 'application/json' }) });
-        }
-        const rawExt = (file.name || 'image.png').split('.').pop().toLowerCase();
+        if (!file || typeof file === 'string') return json({ error: 'no file' }, 400);
+        if (!(file.type || '').startsWith('image/')) return json({ error: 'not an image' }, 400);
+        const rawExt = (file.name || 'img.png').split('.').pop().toLowerCase();
         const ext = EXT_OK.includes(rawExt) ? rawExt : 'png';
-        const key = 'img/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
-        await env.IMAGES.put(key, file.stream(), { httpMetadata: { contentType: file.type || 'image/png' } });
-        const url2 = { url: url.origin + '/images/' + key };
-        return new Response(JSON.stringify(url2), { status: 200, headers: cors({ 'Content-Type': 'application/json' }) });
-      } catch (e) {
-        return new Response(JSON.stringify({ error: 'server error' }), { status: 500, headers: cors({ 'Content-Type': 'application/json' }) });
-      }
-    }
+        const key = 'images/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
 
-    // 服务图片：GET /images/<key>
-    if (method === 'GET' && path.indexOf('/images/') === 0) {
-      try {
-        const key = decodeURIComponent(path.slice('/images/'.length));
-        const obj = await env.IMAGES.get(key);
-        if (!obj) return new Response('404', { status: 404, headers: cors() });
-        const type = (obj.httpMetadata && obj.httpMetadata.contentType) || 'application/octet-stream';
-        return new Response(obj.body, {
-          headers: cors({
-            'Content-Type': type,
-            'Cache-Control': 'public, max-age=31536000, immutable'
-          })
+        const buf = await file.arrayBuffer();
+        const content = b64(buf);
+        const apiUrl = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + key;
+
+        const resp = await fetch(apiUrl, {
+          method: 'PUT',
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json',
+            'User-Agent': 'fo4so-api'
+          },
+          body: JSON.stringify({ message: 'upload image ' + key, content: content, branch: 'main' })
         });
+        if (!resp.ok) {
+          const t = await resp.text();
+          return json({ error: 'github write failed: ' + (t || '').slice(0, 140) }, 502);
+        }
+        // 返回可直接显示的链接（raw.githubusercontent 即时可用；也可换成 https://fo4so.asia/images/<key>）
+        return json({ url: 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/main/' + key }, 200);
       } catch (e) {
-        return new Response('500', { status: 500, headers: cors() });
+        return json({ error: 'server error' }, 500);
       }
     }
 
-    return new Response('FO4SO API', { status: 200, headers: cors() });
+    return new Response('FO4SO API', { status: 200, headers: CORS });
   }
 };
