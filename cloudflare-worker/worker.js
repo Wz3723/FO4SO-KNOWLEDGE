@@ -27,15 +27,14 @@ export default {
       const repo  = env.REPO  || 'FO4SO-KNOWLEDGE';
       if (!token) return json({ error: 'server not configured (missing GITHUB_TOKEN)' }, 500);
       try {
-        const form = await request.formData();
-        const file = form.get('file');
-        if (!file || typeof file === 'string') return json({ error: 'no file' }, 400);
-        if (!(file.type || '').startsWith('image/')) return json({ error: 'not an image' }, 400);
-        const rawExt = (file.name || 'img.png').split('.').pop().toLowerCase();
-        const ext = EXT_OK.includes(rawExt) ? rawExt : 'png';
+        const type = request.headers.get('content-type') || 'image/png';
+        if (!type.startsWith('image/')) return json({ error: 'not an image' }, 400);
+        const buf = await request.arrayBuffer();
+        if (!buf || !buf.byteLength) return json({ error: 'no data' }, 400);
+        const sub = (type.split('/')[1] || 'png').split('+')[0];
+        const ext = EXT_OK.includes(sub) ? sub : 'png';
         const key = 'images/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
 
-        const buf = await file.arrayBuffer();
         const content = b64(buf);
         const apiUrl = 'https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + key;
 

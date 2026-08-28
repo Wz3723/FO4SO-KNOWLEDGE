@@ -213,9 +213,8 @@
         if(!f) return;
         if(!(f.type||'').startsWith('image/')){ upSet('请选择图片文件', false); return; }
         if(f.size > 10*1024*1024){ upSet('图片过大（限 10MB）', false); return; }
-        var fd=new FormData(); fd.append('file', f);
         upSet('上传中…', true);
-        fetch(API, { method:'POST', body: fd })
+        fetch(API, { method:'POST', headers:{ 'Content-Type': f.type || 'image/png' }, body: f })
           .then(function(r){ if(!r.ok){ return r.json().then(function(d){ throw new Error(d.error||('上传失败('+r.status+')')); }); } return r.json(); })
           .then(function(d){
             insertAtCursor(body, '![图片]('+d.url+')');
