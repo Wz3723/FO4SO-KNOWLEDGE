@@ -58,6 +58,15 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors(), body: '' };
   if (event.httpMethod !== 'GET' && event.httpMethod !== 'POST') return j({ error: 'method' }, 405);
 
+  // webhook（POST）只在相关事件触发才跑，避免每次评论/编辑都重复同步
+  if (event.httpMethod === 'POST') {
+    let action = '';
+    try { action = (JSON.parse(event.body || '{}').action || ''); } catch (e) {}
+    if (action && ['labeled', 'opened', 'edited'].indexOf(action) < 0) {
+      return j({ ok: true, skip: 'action=' + action }, 200);
+    }
+  }
+
   const env = process.env;
   const token = env.GITHUB_TOKEN, owner = env.OWNER || 'wz3723', repo = env.REPO || 'FO4SO-KNOWLEDGE';
   const label = env.PUBLISH_LABEL || '已审核';
