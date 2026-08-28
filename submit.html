@@ -243,12 +243,12 @@
         var f=imgFile.files && imgFile.files[0];
         if(!f) return;
         if(!(f.type||'').startsWith('image/')){ upSet('请选择图片文件', false); return; }
-        if(f.size > 20*1024*1024){ upSet('原图过大（限 20MB，建议先用大图裁剪）', false); imgFile.value=''; return; }
+        if(f.size > 30*1024*1024){ upSet('原图过大（限 30MB，建议先用大图裁剪）', false); imgFile.value=''; return; }
         upSet('压缩中…', true);
         try{
-          var out = await compressImage(f, 1280, 0.7);
+          var out = await compressImage(f, 1920, 0.8);
           var mb=(out.size/1024/1024).toFixed(2);
-          if(out.size > 4*1024*1024){ upSet('图片过大（压缩后仍 >4MB，请用小图）', false); imgFile.value=''; return; }
+          if(out.size > 8*1024*1024){ upSet('图片过大（压缩后仍 >8MB，请用小图）', false); imgFile.value=''; return; }
           upSet('上传中（'+mb+'MB）…', true);
           var resp = await fetch(API, { method:'POST', headers:{ 'Content-Type': out.type||'image/webp' }, body: out });
           if(!resp.ok){ var e=await resp.json().catch(function(){return{};}); throw new Error(e.error||('上传失败('+resp.status+')')); }
