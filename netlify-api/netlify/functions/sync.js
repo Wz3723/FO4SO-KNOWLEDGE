@@ -142,10 +142,16 @@ exports.handler = async (event) => {
     // 3) 维护 articles-manifest.json（清单，供攻略页即时读取，避免缓存延迟/限流）
     try {
       const manifest = { files: Array.from(publishedPaths).sort() };
+      // 若文件已存在，需先取 sha 才能覆盖
+      let sha = undefined;
+      const cur = await fetch(gh + '/contents/articles-manifest.json', { headers: auth });
+      if (cur.ok) { const d = await cur.json(); sha = d.sha; }
+      const payload = { message: '更新文章清单', content: Buffer.from(JSON.stringify(manifest)).toString('base64'), branch: 'main' };
+      if (sha) payload.sha = sha;
       const mput = await fetch(gh + '/contents/articles-manifest.json', {
         method: 'PUT',
         headers: Object.assign({ 'Content-Type':'application/json' }, auth),
-        body: JSON.stringify({ message: '更新文章清单', content: Buffer.from(JSON.stringify(manifest)).toString('base64'), branch: 'main' })
+        body: JSON.stringify(payload)
       });
       if (!mput.ok) errors.push('manifest: '+ (await mput.text()).slice(0,120));
     } catch (e) { errors.push('manifest: ' + (e.message||'')); }
