@@ -239,7 +239,7 @@
         if(f.size > 20*1024*1024){ upSet('原图过大（限 20MB，建议先用大图裁剪）', false); imgFile.value=''; return; }
         upSet('压缩中…', true);
         try{
-          var out = await compressImage(f, 1600, 0.8);
+          var out = await compressImage(f, 1280, 0.7);
           var mb=(out.size/1024/1024).toFixed(2);
           if(out.size > 4*1024*1024){ upSet('图片过大（压缩后仍 >4MB，请用小图）', false); imgFile.value=''; return; }
           upSet('上传中（'+mb+'MB）…', true);
