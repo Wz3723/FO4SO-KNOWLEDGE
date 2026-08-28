@@ -20,6 +20,9 @@ const ARTICLE_CSS = [
   ".body p{margin:16px 0;}", ".body ul,.body ol{padding-left:24px;margin:16px 0;}",
   ".body li{margin:6px 0;}", ".body a{color:#f2c76b;text-decoration:underline;}",
   ".body img{max-width:100%;border-radius:8px;margin:16px 0;display:block;}",
+  ".body a.zoom-img{display:block;}",
+  ".body a.zoom-img img{cursor:zoom-in;transition:opacity .15s;}",
+  ".body a.zoom-img img:hover{opacity:.9;}",
   ".body blockquote{border-left:3px solid #a8873f;background:#131315;padding:12px 16px;margin:16px 0;color:#ab9f83;border-radius:0 8px 8px 0;}",
   ".sign{margin-top:30px;padding-top:16px;border-top:1px solid #1d1d20;color:#7d7460;font-size:14px;}.sign b{color:#f2c76b;}",
   ".foot{max-width:820px;margin:0 auto;text-align:center;color:#7d7460;font-size:13px;border-top:1px solid #1d1d20;padding:22px;}",
@@ -36,6 +39,12 @@ function today(){ return new Date().toISOString().slice(0,10); }
 function slugify(t){ return String(t).replace(/[^\w\u4e00-\u9fa5-]+/g,'_').replace(/^_+|_+$/g,'').slice(0,50) || 'article'; }
 
 function buildArticlePage(title, author, date, bodyHtml, words){
+  // 每个图片包一层 <a target=_blank>，点击在标签页打开原图放大查看
+  bodyHtml = String(bodyHtml || '').replace(/<img([^>]*?)>/g, function(m, attrs){
+    var src = (String(attrs).match(/src=["']([^"']*)["']/) || [])[1];
+    if (!src) return m;
+    return '<a class="zoom-img" href="' + src + '" target="_blank" rel="noopener"><img' + attrs + '></a>';
+  });
   return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8"/>\n<meta name="viewport" content="width=device-width, initial-scale=1.0"/>\n<title>'+esc(title)+'</title>\n<meta name="author" content="'+esc(author||'')+'"/>\n<meta name="date" content="'+esc(date||'')+'"/>\n<meta name="category" content="攻略"/>\n<style>'+ARTICLE_CSS+'</style>\n</head>\n<body>\n<div class="progress" id="prog"></div>\n<nav class="topnav">\n  <a class="brand" href="../index.html">FO4SO<span class="dot">.</span>KNOWLEDGE</a>\n  <div class="links"><a href="../index.html">首页</a><a href="../guide.html">目录</a><a href="../submit.html">投稿</a></div>\n</nav>\n<main class="article">\n  <nav class="crumb"><a href="../guide.html">目录</a> / <a href="../guide.html#player-guides">玩家上传攻略</a> / <span>'+esc(title)+'</span></nav>\n  <div class="bar"><a class="back" href="../guide.html#player-guides">← 返回玩家上传攻略</a></div>\n  <header class="head">\n    <h1>'+esc(title)+'</h1>\n    <div class="meta"><span>作者 <b>'+esc(author||'匿名')+'</b></span>'+(date?'<span>日期 <b>'+esc(date)+'</b></span>':'')+'<span>字数 <b>'+words+'</b></span></div>\n  </header>\n  <div class="rule"></div>\n  <div class="body">'+bodyHtml+'</div>\n  <p class="sign">—— 投稿：<b>'+esc(author||'匿名')+'</b></p>\n</main>\n<footer class="foot">FO4SO.KNOWLEDGE // VERSION：1.5.6</footer>\n</body>\n</html>';
 }
 
