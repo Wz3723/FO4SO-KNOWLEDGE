@@ -83,13 +83,17 @@ exports.handler = async (event) => {
 
     // 2) 已发布：articles/ 里的文件名（<n>-<slug>.html）
     const artRes = await fetch(gh + '/contents/articles', { headers: auth });
-    let existing = [];
+    let existing = [];        // [{name, path}]
+    let publishedPaths = new Set();
     if (artRes.ok) {
       const files = await artRes.json();
-      if (Array.isArray(files)) existing = files.map(f => f.name);
+      if (Array.isArray(files)) {
+        existing = files.map(f => ({ name: f.name, path: f.path || ('articles/' + f.name) }));
+        existing.forEach(x => publishedPaths.add(x.path));
+      }
     }
     const publishedNums = new Set();
-    existing.forEach(n => { const m = n.match(/^(\d+)-/); if (m) publishedNums.add(m[1]); });
+    existing.forEach(x => { const m = x.name.match(/^(\d+)-/); if (m) publishedNums.add(m[1]); });
 
     let published = 0, skipped = 0, errors = [];
     const PENDING = [];
@@ -115,7 +119,19 @@ exports.handler = async (event) => {
       });
       if (!put.ok) { const e = await put.text(); errors.push('#'+n+': '+e.slice(0,120)); continue; }
       published++;
+      publishedPaths.add(path);
     }
+
+    // 3) 维护 articles-manifest.json（清单，供攻略页即时读取，避免缓存延迟/限流）
+    try {
+      const manifest = { files: Array.from(publishedPaths).sort() };
+      const mput = await fetch(gh + '/contents/articles-manifest.json', {
+        method: 'PUT',
+        headers: Object.assign({ 'Content-Type':'application/json' }, auth),
+        body: JSON.stringify({ message: '更新文章清单', content: Buffer.from(JSON.stringify(manifest)).toString('base64'), branch: 'main' })
+      });
+      if (!mput.ok) errors.push('manifest: '+ (await mput.text()).slice(0,120));
+    } catch (e) { errors.push('manifest: ' + (e.message||'')); }
 
     return j({ ok: true, label: label, published: published, skipped: skipped, errors: errors }, 200);
   } catch (e) {

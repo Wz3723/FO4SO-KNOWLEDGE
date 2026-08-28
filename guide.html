@@ -659,15 +659,14 @@
       var OWNER='wz3723', REPO='FO4SO-KNOWLEDGE';
       var items=[], activeTab='全部';
       function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-      // 用 jsDelivr（无 GitHub 60次限流、国内可访问）：列表 + 内容
-      fetch('https://data.jsdelivr.com/v1/packages/gh/'+OWNER+'/'+REPO+'@main?structure=flat')
+      // 用 articles-manifest.json（raw.githubusercontent 即时读取，无缓存延迟、无限流）
+      fetch('https://raw.githubusercontent.com/'+OWNER+'/'+REPO+'/main/articles-manifest.json')
         .then(function(r){ if(!r.ok) throw new Error('none'); return r.json(); })
         .then(function(data){
-          var names=(data.files||[]).map(function(f){ return f.name; })
-            .filter(function(n){ return /^\/articles\//.test(n) && /\.html$/i.test(n); });
+          var names=(data.files||[]).filter(function(n){ return /\/articles\//.test(n) && /\.html$/i.test(n); });
           return Promise.all(names.map(function(name){
-            var path=name.replace(/^\//,'');
-            return fetch('https://cdn.jsdelivr.net/gh/'+OWNER+'/'+REPO+'@main/'+path).then(function(r){ return r.text(); }).then(function(html){
+            var path=name.replace(/^\/+/,'');
+            return fetch('https://raw.githubusercontent.com/'+OWNER+'/'+REPO+'/main/'+path).then(function(r){ return r.text(); }).then(function(html){
               var title=((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)||[])[1]||'').replace(/<[^>]+>/g,'').trim();
               var author=((html.match(/<meta name="author" content="([^"]*)"/i)||[])[1]||'')||'匿名';
               var date=((html.match(/<meta name="date" content="([^"]*)"/i)||[])[1]||'');
