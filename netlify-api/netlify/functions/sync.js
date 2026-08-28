@@ -120,6 +120,14 @@ exports.handler = async (event) => {
       if (!put.ok) { const e = await put.text(); errors.push('#'+n+': '+e.slice(0,120)); continue; }
       published++;
       publishedPaths.add(path);
+      // 在 Issue 上回一条「已发布」评论，给站长确认
+      try {
+        await fetch(gh + '/issues/' + n + '/comments', {
+          method: 'POST',
+          headers: Object.assign({ 'Content-Type':'application/json' }, auth),
+          body: JSON.stringify({ body: '✅ 已发布到网站：《' + (title || '') + '》' })
+        });
+      } catch (e) { /* 评论失败不影响发布 */ }
     }
 
     // 3) 维护 articles-manifest.json（清单，供攻略页即时读取，避免缓存延迟/限流）
