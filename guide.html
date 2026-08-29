@@ -207,6 +207,13 @@
   .cat-view h4{font-size:16px;font-weight:800;color:var(--gold);margin:20px 0 8px;line-height:1.4;border-bottom:1px solid var(--border-soft);padding-bottom:6px;}
   .cat-view p.q{color:var(--text);padding-left:14px;border-left:3px solid var(--gold-dim);}
   .cat-view p code{font-family:var(--mono);background:var(--bg-soft);border:1px solid var(--border);padding:1px 5px;border-radius:4px;color:#e5d9b5;font-size:13px;}
+  .owner-item{margin:0 0 16px;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  .owner-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;background:var(--panel);}
+  .owner-head:hover{background:rgba(227,176,75,.06);}
+  .owner-t{font-weight:800;color:var(--gold-strong);font-size:16px;}
+  .owner-d{font-family:var(--mono);color:var(--text-muted);font-size:12px;white-space:nowrap;}
+  .owner-body{padding:16px 20px;background:var(--bg-soft);}
+  .owner-item.open .owner-head{background:rgba(227,176,75,.10);}
   .cat-view .mono{font-family:var(--mono);color:var(--gold-strong);font-size:14px;}
   .cat-view h3 b{color:var(--gold-strong);}
 
@@ -377,6 +384,7 @@
             <li><a class="sub" href="#" data-cat="4">└ 手把手带你入门</a></li>
           </ul>
         </li>
+        <li><a href="#" data-cat="own"><span class="idx">✦</span>站长个人游玩心得<span class="chev">&gt;</span></a></li>
         <li><a href="#" data-cat="5"><span class="idx">5</span>玩家上传攻略<span class="chev">&gt;</span></a></li>
         <li><a href="#" data-cat="6"><span class="idx">6</span>常见问题与修复<span class="chev">&gt;</span></a></li>
       </ul>
@@ -495,6 +503,19 @@
           <li><span class="hl">技巧二：…</span></li>
           <li><span class="hl">技巧三：…</span></li>
         </ul>
+      </section>
+
+      <!-- 站长个人游玩心得（仅站长编辑，工具写入） -->
+      <section class="cat-view" data-cat="own">
+        <div class="cat-banner">
+          <div class="cb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 4-4c1.2 0 2.3.6 3 1.5A3.9 3.9 0 0 1 15 7a4 4 0 0 1 4 4c0 5.5-7 10-7 10z"/></svg></div>
+          <div>
+            <h2 class="cb-title" id="cat-own">站长个人游玩心得</h2>
+            <div class="cb-sub">站主的个人游玩体验与心得，由站长维护。</div>
+          </div>
+        </div>
+        <div><span class="chip"><span class="dot"></span>仅站长编辑</span><span class="chip"><span class="dot"></span>持续更新</span></div>
+        <div id="ownerGuideList"></div>
       </section>
 
       <!-- 分类 5：玩家上传攻略 -->
@@ -842,6 +863,41 @@
       if(tabs){ tabs.addEventListener('click',function(e){ var b=e.target.closest('.gtab'); if(!b) return; activeTab=b.getAttribute('data-tab'); [].forEach.call(tabs.querySelectorAll('.gtab'),function(x){ x.classList.toggle('active',x===b); }); render(); }); }
       if(search){ search.addEventListener('input', render); }
       render();
+    })();
+
+    // ===== 站长个人游玩心得（仅站长，读 owner-guides-manifest.json）=====
+    (function(){
+      var box=document.getElementById('ownerGuideList');
+      if(!box) return;
+      function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+      fetch('owner-guides-manifest.json')
+        .then(function(r){ if(r.status===404) throw new Error('empty'); if(!r.ok) throw new Error('err'); return r.json(); })
+        .then(function(data){
+          var names=(data.files||[]).filter(function(n){ return /\/?owner-guides\//.test(n) && /\.html$/i.test(n); });
+          if(!names.length){ box.innerHTML='<div class="note-empty">站长会陆续写个人游玩心得。</div>'; return; }
+          return Promise.all(names.map(function(name){
+            var path=name.replace(/^\/+/,'');
+            return fetch(path).then(function(r){ if(!r.ok) return null; return r.text(); }).then(function(html){
+              if(!html) return null;
+              var title=((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)||[])[1]||'').replace(/<[^>]+>/g,'').trim();
+              var date=((html.match(/<meta name="date" content="([^"]*)"/i)||[])[1]||'');
+              var bodyC=(html.match(/<div class="body">([\s\S]*?)<\/div>\s*<p class="sign">/i)||[])[1]||html;
+              return { title: title||path.split('/').pop(), date: date, body: bodyC };
+            });
+          }));
+        })
+        .then(function(list){
+          var order=(list||[]).filter(Boolean).sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+          if(!order.length){ box.innerHTML='<div class="note-empty">站长会陆续写个人游玩心得。</div>'; return; }
+          box.innerHTML='';
+          order.forEach(function(it){
+            var el=document.createElement('div'); el.className='owner-item';
+            el.innerHTML='<div class="owner-head"><span class="owner-t">'+esc(it.title)+'</span>'+(it.date?'<span class="owner-d">'+esc(it.date)+'</span>':'')+'</div><div class="owner-body" style="display:none;">'+it.body+'</div>';
+            el.querySelector('.owner-head').addEventListener('click',function(){ var b=el.querySelector('.owner-body'); b.style.display=(b.style.display==='none')?'block':'none'; el.classList.toggle('open'); });
+            box.appendChild(el);
+          });
+        })
+        .catch(function(e){ box.innerHTML='<div class="note-empty">'+((e&&e.message==='empty')?'站长会陆续写个人游玩心得。':'读取失败，请稍后刷新。')+'</div>'; });
     })();
   </script>
   <script src="search.js"></script>
