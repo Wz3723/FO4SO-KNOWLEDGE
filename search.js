@@ -73,6 +73,36 @@
   }
   function close() { box.classList.remove('open'); sel = -1; }
 
+  // 动态加载玩家投稿文章（标题/作者/正文都进索引，支持全文检索）
+  var articlesLoaded = false;
+  function loadArticles() {
+    return fetch('articles-manifest.json')
+      .then(function (r) { if (!r.ok) throw new Error('none'); return r.json(); })
+      .then(function (data) {
+        var names = (data.files || []).filter(function (n) { return /\/?articles\//.test(n) && /\.html$/i.test(n); });
+        return Promise.all(names.map(function (name) {
+          var path = name.replace(/^\/+/, '');
+          return fetch(path).then(function (r) { return r.ok ? r.text() : ''; }).then(function (html) {
+            if (!html) return null;
+            var title = ((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) || [])[1] || '').replace(/<[^>]+>/g, '').trim();
+            var author = ((html.match(/<meta name="author" content="([^"]*)"/i) || [])[1] || '') || '匿名';
+            var date = ((html.match(/<meta name="date" content="([^"]*)"/i) || [])[1] || '');
+            var body = ((html.match(/<div class="body">([\s\S]*?)<\/div>\s*<p class="sign">/i) || [])[1] || html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+            if (!title) return null;
+            return { t: title, u: path, k: (author + ' ' + date + ' ' + title + ' ' + body).toLowerCase(), d: '作者：' + author + (date ? ' · ' + date : '') };
+          });
+        }));
+      })
+      .then(function (list) {
+        var arr = (list || []).filter(Boolean);
+        if (arr.length) INDEX = INDEX.concat(arr);
+        articlesLoaded = true;
+        if (input && input.value.trim()) render(query(input.value));
+      })
+      .catch(function () { articlesLoaded = true; });
+  }
+  loadArticles();
+
   input.addEventListener('input', function () { render(query(input.value)); });
   input.addEventListener('focus', function () { if (input.value.trim()) render(query(input.value)); });
   input.addEventListener('keydown', function (e) {
