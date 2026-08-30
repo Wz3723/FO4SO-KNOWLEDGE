@@ -24,6 +24,12 @@
   if (!input || !box) return;
 
   var sel = -1, items = [];
+  var field = 'title', sfTabs = document.querySelectorAll('.search-field .sf-tab');
+
+  function setField(f){ field = f; [].forEach.call(sfTabs, function(x){ x.classList.toggle('active', x.getAttribute('data-field') === f); }); if (input.value.trim()) render(query(input.value)); }
+  [].forEach.call(sfTabs, function(t){
+    t.addEventListener('click', function(){ setField(t.getAttribute('data-field')); });
+  });
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
@@ -45,7 +51,10 @@
     if (!q) return [];
     var tokens = q.split(/\s+/);
     return INDEX.filter(function (e) {
-      var hay = (e.t + ' ' + e.k).toLowerCase();
+      var hay;
+      if (field === 'author') hay = (e.a || '').toLowerCase();
+      else if (field === 'content') hay = (e.b || '').toLowerCase();
+      else hay = (e.t || '').toLowerCase();
       return tokens.every(function (t) { return hay.indexOf(t) >= 0; });
     });
   }
@@ -89,7 +98,7 @@
             var date = ((html.match(/<meta name="date" content="([^"]*)"/i) || [])[1] || '');
             var body = ((html.match(/<div class="body">([\s\S]*?)<\/div>\s*<p class="sign">/i) || [])[1] || html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
             if (!title) return null;
-            return { t: title, u: path, k: (author + ' ' + date + ' ' + title + ' ' + body).toLowerCase(), d: '作者：' + author + (date ? ' · ' + date : '') };
+            return { t: title, u: path, a: author, b: body, d: '作者：' + author + (date ? ' · ' + date : '') };
           });
         }));
       })

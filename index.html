@@ -126,6 +126,10 @@
     border:1px solid var(--border);border-radius:6px;
     padding:2px 7px;background:var(--bg);white-space:nowrap;
   }
+  .search-field{display:flex;gap:6px;margin-top:8px;}
+  .sf-tab{flex:1;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-soft);color:var(--text-muted);font-size:12px;cursor:pointer;font-family:var(--sans);transition:background .15s,color .15s;}
+  .sf-tab.active{background:rgba(227,176,75,.12);color:var(--gold-strong);border-color:var(--gold-dim);}
+  .sf-tab:hover{color:var(--gold);}
   .nav-links{display:flex;align-items:center;gap:22px;margin-left:auto;}
   .nav-links a{
     font-size:14px;color:var(--text-soft);
@@ -413,6 +417,11 @@
         <input type="text" placeholder="搜索文档" />
         <kbd>Ctrl K</kbd>
       </label>
+      <div class="search-field">
+        <button type="button" class="sf-tab active" data-field="title">标题</button>
+        <button type="button" class="sf-tab" data-field="author">作者</button>
+        <button type="button" class="sf-tab" data-field="content">内容</button>
+      </div>
       <div class="search-results" id="searchResults"></div>
     </div>
 
