@@ -533,12 +533,6 @@
         </div>
 
         <div class="guides-toolbar" id="guidesToolbar">
-          <div class="guides-tabs" id="guidesTabs">
-            <button type="button" class="gtab active" data-tab="全部">全部</button>
-            <button type="button" class="gtab" data-tab="攻略">攻略</button>
-            <button type="button" class="gtab" data-tab="心得">心得</button>
-            <button type="button" class="gtab" data-tab="答疑">答疑</button>
-          </div>
           <div class="guides-search">
             <input id="guidesSearch" placeholder="搜索文章名 / 作者…" />
           </div>
@@ -834,7 +828,7 @@
       function render(){
         var q=(search.value||'').trim().toLowerCase();
         var rows=items.filter(function(it){
-          var ck=(activeTab==='全部')||(it.cat===activeTab);
+          var ck=true;
           var qk=!q||it.title.toLowerCase().indexOf(q)>=0||it.author.toLowerCase().indexOf(q)>=0;
           return ck&&qk;
         });
