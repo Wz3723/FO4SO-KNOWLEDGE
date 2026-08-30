@@ -216,7 +216,7 @@
   .owner-head:hover{background:rgba(227,176,75,.06);}
   .owner-t{font-weight:800;color:var(--gold-strong);font-size:16px;}
   .owner-d{font-family:var(--mono);color:var(--text-muted);font-size:12px;white-space:nowrap;}
-  .owner-body{padding:16px 20px;background:var(--bg-soft);}
+  .owner-body{padding:16px 20px;background:var(--bg-soft);scroll-margin-top:20px;}
   .owner-item.open .owner-head{background:rgba(227,176,75,.10);}
   .cat-view .mono{font-family:var(--mono);color:var(--gold-strong);font-size:14px;}
   .cat-view h3 b{color:var(--gold-strong);}
@@ -338,7 +338,7 @@
   .cv-title{font-size:24px;font-weight:800;color:#f4f0e0;margin:0 0 10px;line-height:1.3;}
   .cv-meta{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--text-muted);margin-bottom:16px;}
   .cv-meta b{color:var(--gold-strong);}
-  .cv-body{font-size:15px;color:var(--text-soft);border-top:1px solid var(--border-soft);padding-top:16px;}
+  .cv-body{font-size:15px;color:var(--text-soft);border-top:1px solid var(--border-soft);padding-top:16px;scroll-margin-top:20px;}
   .cv-body h2,.cv-body h3,.cv-body h4{color:var(--gold);margin:18px 0 8px;line-height:1.35;}
   .cv-body p{margin:12px 0;}
   .cv-body ul,.cv-body ol{padding-left:22px;margin:12px 0;}
@@ -896,7 +896,7 @@
           order.forEach(function(it){
             var el=document.createElement('div'); el.className='owner-item';
             el.innerHTML='<div class="owner-head"><span class="owner-t">'+esc(it.title)+'</span>'+(it.date?'<span class="owner-d">'+esc(it.date)+'</span>':'')+'</div><div class="owner-body" style="display:none;">'+it.body+'</div>';
-            el.querySelector('.owner-head').addEventListener('click',function(){ var b=el.querySelector('.owner-body'); b.style.display=(b.style.display==='none')?'block':'none'; el.classList.toggle('open'); });
+            el.querySelector('.owner-head').addEventListener('click',function(){ var b=el.querySelector('.owner-body'); var opening=(b.style.display==='none'); b.style.display=opening?'block':'none'; el.classList.toggle('open',opening); if(opening) b.scrollIntoView({behavior:'smooth',block:'start'}); });
             box.appendChild(el);
           });
         })
